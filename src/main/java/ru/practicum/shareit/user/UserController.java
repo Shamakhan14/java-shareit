@@ -70,7 +70,7 @@ public class UserController {
         if (isValidId(userId)) {
             userService.deleteUserById(userId);
             log.info("Данные пользователя удалены.");
-        }else {
+        } else {
             throw new ValidationException("Пользователь не найден.");
         }
     }
