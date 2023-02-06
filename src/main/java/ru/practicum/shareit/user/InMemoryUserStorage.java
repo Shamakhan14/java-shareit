@@ -1,45 +1,45 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class InMemoryUserStorage implements UserStorage {
 
     private int ids = 0;
-    private HashMap<Integer, User> users = new HashMap<>();
+    private Map<Integer, User> users = new HashMap<>();
 
     @Override
-    public User createUser(UserDto userDto) {
-        User user = new User(++ids, userDto.getName(), userDto.getEmail());
+    public User create(User user) {
+        user.setId(++ids);
         users.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAll() {
         return new ArrayList<>(users.values());
     }
 
     @Override
-    public User updateUser(int userId, UserDto userDto) {
-        User user = users.get(userId);
-        if (userDto.getName() != null) user.setName(userDto.getName());
-        if (userDto.getEmail() != null) user.setEmail(userDto.getEmail());
-        return user;
+    public User update(User user) {
+        User oldUser = users.get(user.getId());
+        if (user.getName() != null && !user.getName().isBlank()) oldUser.setName(user.getName());
+        if (user.getEmail() != null && !user.getEmail().isBlank()) oldUser.setEmail(user.getEmail());
+        return oldUser;
     }
 
     @Override
-    public User getUserById(int userId) {
+    public User getById(int userId) {
         return users.get(userId);
     }
 
     @Override
-    public void deleteUserById(int userId) {
+    public void deleteById(int userId) {
         users.remove(userId);
     }
 }

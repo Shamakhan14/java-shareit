@@ -2,8 +2,12 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exceptions.ItemNotFoundException;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserStorage;
 
 import java.util.List;
 
@@ -12,24 +16,52 @@ import java.util.List;
 public class ItemService {
 
     private final ItemStorage itemStorage;
+    private final UserStorage userStorage;
 
-    public Item createItem(int userId, ItemDto itemDto) {
-        return itemStorage.createItem(userId, itemDto);
+    public ItemDto create(int userId, ItemDto itemDto) {
+        if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
+        Item item = ItemMapper.mapToNewItem(itemDto);
+        item.setOwner(userId);
+        return ItemMapper.mapToItemDto(itemStorage.create(item));
     }
 
-    public List<Item> getAllItems(int userId) {
-        return itemStorage.getAllItems(userId);
+    public List<ItemDto> getAll(int userId) {
+        if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
+        return ItemMapper.mapToItemDto(itemStorage.getAll(userId));
     }
 
-    public Item getItemById(int itemId) {
-        return itemStorage.getItemById(itemId);
+    public ItemDto getById(int userId, int itemId) {
+        if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
+        if (!isValidItemId(itemId)) throw new ItemNotFoundException("Неверный ID вещи.");
+        return ItemMapper.mapToItemDto(itemStorage.getById(itemId));
     }
 
-    public Item updateItem(int itemId, ItemDto itemDto) {
-        return itemStorage.updateItem(itemId, itemDto);
+    public ItemDto update(int userId, int itemId, ItemDto itemDto) {
+        if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
+        if (!isValidItemId(itemId)) throw new ItemNotFoundException("Неверный ID вещи.");
+        if (itemStorage.getById(itemId).getOwner() != userId)
+            throw new UserNotFoundException("Вещь не принадлежит данному пользователю.");
+        Item item = ItemMapper.mapToNewItem(itemDto);
+        item.setId(itemId);
+        return ItemMapper.mapToItemDto(itemStorage.update(item));
     }
 
-    public List<Item> searchItems(String text) {
-        return itemStorage.searchItems(text);
+    public List<ItemDto> search(int userId, String text) {
+        if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
+        return ItemMapper.mapToItemDto(itemStorage.search(text));
+    }
+
+    private boolean isValidOwner(int userId) {
+        for (User user: userStorage.getAll()) {
+            if (userId == user.getId()) return true;
+        }
+        return false;
+    }
+
+    private boolean isValidItemId(int itemId) {
+        for (Item item: itemStorage.get()) {
+            if (item.getId() == itemId) return true;
+        }
+        return false;
     }
 }
