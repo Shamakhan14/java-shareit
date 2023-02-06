@@ -42,7 +42,7 @@ public class InMemoryItemStorage implements ItemStorage {
     @Override
     public Item update(Item item) {
         Item oldItem = items.get(item.getId());
-        if (item.getAvailable() != null && item.getAvailable() != null) {
+        if (item.getAvailable() != null && oldItem.getAvailable() != null) {
             if (Boolean.compare(item.getAvailable(), oldItem.getAvailable()) != 0)
                 oldItem.setAvailable(item.getAvailable());
         }
