@@ -6,7 +6,6 @@ import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserStorage;
 
 import java.util.List;
@@ -52,16 +51,18 @@ public class ItemService {
     }
 
     private boolean isValidOwner(int userId) {
-        for (User user: userStorage.getAll()) {
-            if (userId == user.getId()) return true;
+        if (userStorage.getById(userId) != null) {
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     private boolean isValidItemId(int itemId) {
-        for (Item item: itemStorage.get()) {
-            if (item.getId() == itemId) return true;
+        if (itemStorage.getById(itemId) != null) {
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 }

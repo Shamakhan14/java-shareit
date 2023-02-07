@@ -53,11 +53,10 @@ public class UserService {
     }
 
     private boolean isValidId(int userId) {
-        for (User user: userStorage.getAll()) {
-            if (userId == user.getId()) {
-                return true;
-            }
+        if (userStorage.getById(userId) != null) {
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 }

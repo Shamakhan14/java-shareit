@@ -2,6 +2,7 @@ package ru.practicum.shareit;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -59,6 +60,14 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleDuplicateEmailError(final DuplicateEmailException exception) {
+        log.info("{}:{}", exception.getClass().toString(), exception.getMessage());
+        return Map.of("error", exception.getClass().toString(),
+                "error message", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
         log.info("{}:{}", exception.getClass().toString(), exception.getMessage());
         return Map.of("error", exception.getClass().toString(),
                 "error message", exception.getMessage());
