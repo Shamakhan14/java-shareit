@@ -67,9 +67,15 @@ public class ItemService {
         if (itemRepository.getById(itemId).getOwner() != userId)
             throw new UserNotFoundException("Вещь не принадлежит данному пользователю.");
         Item item = itemRepository.getById(itemId);
-        if (itemDto.getName() != null) {item.setName(itemDto.getName());}
-        if (itemDto.getDescription() != null) {item.setDescription(itemDto.getDescription());}
-        if (itemDto.getAvailable() != null) {item.setAvailable(itemDto.getAvailable());}
+        if (itemDto.getName() != null) {
+            item.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            item.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            item.setAvailable(itemDto.getAvailable());
+        }
         return ItemMapper.mapToItemDto(itemRepository.save(item));
     }
 

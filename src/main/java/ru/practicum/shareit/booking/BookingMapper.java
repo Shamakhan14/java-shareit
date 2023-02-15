@@ -21,7 +21,7 @@ public class BookingMapper {
         return booking;
     }
 
-    public static BookingDtoResponse mapBookingToBookingDtoResponse(Booking booking, User user, ItemDto itemDto){
+    public static BookingDtoResponse mapBookingToBookingDtoResponse(Booking booking, User user, ItemDto itemDto) {
         BookingDtoResponse response = new BookingDtoResponse();
         response.setId(booking.getId());
         response.setStart(booking.getStart());

@@ -174,7 +174,7 @@ public class BookingService {
         }
     }
 
-    private List<BookingDtoResponse> mapBookingsIntoResponse(List<Booking> bookings){
+    private List<BookingDtoResponse> mapBookingsIntoResponse(List<Booking> bookings) {
         List<BookingDtoResponse> response = new ArrayList<>();
         for (Booking booking: bookings) {
             Item item = itemRepository.findById(booking.getItem()).get();

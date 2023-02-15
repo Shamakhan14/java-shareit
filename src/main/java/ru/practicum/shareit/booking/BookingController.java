@@ -47,6 +47,7 @@ public class BookingController {
         log.info("Выведен список бронирований пользователя.");
         return response;
     }
+
     @GetMapping("/owner")
     public List<BookingDtoResponse> getAllForItems(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                @RequestParam(defaultValue = "ALL") String state) {

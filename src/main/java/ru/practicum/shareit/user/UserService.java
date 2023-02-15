@@ -27,8 +27,12 @@ public class UserService {
     public UserDto update(Long userId, UserDto userDto) {
         if (!isValidId(userId)) throw new ValidationException("Неверный ID пользователя.");
         User user = userRepository.findById(userId).get();
-        if (userDto.getName() != null) {user.setName(userDto.getName());}
-        if (userDto.getEmail() != null) {user.setEmail(userDto.getEmail());}
+        if (userDto.getName() != null) {
+            user.setName(userDto.getName());
+        }
+        if (userDto.getEmail() != null) {
+            user.setEmail(userDto.getEmail());
+        }
         return UserMapper.mapToUserDto(userRepository.save(user));
     }
 
