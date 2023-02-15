@@ -47,7 +47,7 @@ public class ItemService {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         if (!isValidItemId(itemId)) throw new EntityNotFoundException("Неверный ID вещи.");
         Item item = itemRepository.findById(itemId).get();
-        if (item.getOwner() == userId) {
+        if (item.getOwner().equals(userId)) {
             return mapItemsToItemDtoResponses(List.of(itemRepository.getById(itemId))).get(0);
         } else {
             ItemDtoResponse response = new ItemDtoResponse();
@@ -64,7 +64,7 @@ public class ItemService {
     public ItemDto update(Long userId, Long itemId, ItemDto itemDto) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         if (!isValidItemId(itemId)) throw new ItemNotFoundException("Неверный ID вещи.");
-        if (itemRepository.getById(itemId).getOwner() != userId)
+        if (!itemRepository.getById(itemId).getOwner().equals(userId))
             throw new UserNotFoundException("Вещь не принадлежит данному пользователю.");
         Item item = itemRepository.getById(itemId);
         if (itemDto.getName() != null) {
@@ -95,7 +95,7 @@ public class ItemService {
         List<Booking> bookings = bookingRepository.findByItem(itemId);
         boolean isValidCommentator = false;
         for (Booking booking: bookings) {
-            if (booking.getBooker() == userId && booking.getStatus().equals(BookingStatus.APPROVED) &&
+            if (booking.getBooker().equals(userId) && booking.getStatus().equals(BookingStatus.APPROVED) &&
                 booking.getEnd().isBefore(LocalDateTime.now())) {
                 isValidCommentator = true;
             }

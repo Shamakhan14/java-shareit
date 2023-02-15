@@ -30,19 +30,19 @@ public class BookingService {
     public BookingDtoResponse create(Long userId, BookingDtoCreate bookingDtoCreate) {
         if (!isValidRequester(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         if (!isValidItem(bookingDtoCreate.getItemId())) throw new EntityNotFoundException("Неверный ID вещи.");
-        if (itemRepository.findById(bookingDtoCreate.getItemId()).get().getAvailable().equals(false)) {
+        if (itemRepository.getById(bookingDtoCreate.getItemId()).getAvailable().equals(false)) {
             throw new ValidationException("На данный момент вещь недоступна для бронирования.");
         }
         if (!isValidBookingDto(bookingDtoCreate)) {
             throw new ValidationException("Неверно введены данные времени начала и/или окончания.");
         }
-        if (userId == itemRepository.findById(bookingDtoCreate.getItemId()).get().getOwner()) {
+        if (userId.equals(itemRepository.getById(bookingDtoCreate.getItemId()).getOwner())) {
             throw new EntityNotFoundException("Невозможно забронировать свою вещь.");
         }
         Booking booking = BookingMapper.mapBookingDtoCreateToBooking(bookingDtoCreate, userId);
         Booking response = bookingRepository.save(booking);
-        ItemDto itemDto = ItemMapper.mapToItemDto(itemRepository.findById(response.getItem()).get());
-        User user = userRepository.findById(userId).get();
+        ItemDto itemDto = ItemMapper.mapToItemDto(itemRepository.getById(response.getItem()));
+        User user = userRepository.getById(userId);
         return BookingMapper.mapBookingToBookingDtoResponse(response, user, itemDto);
     }
 
@@ -54,7 +54,7 @@ public class BookingService {
         }
         Booking booking = bookingRepository.findById(bookingId).get();
         Item item = itemRepository.findById(booking.getItem()).get();
-        if (item.getOwner() != userId) {
+        if (!item.getOwner().equals(userId)) {
             throw new UserNotFoundException("Статус бронирования вещи может менять только ее владелец.");
         }
         if (!booking.getStatus().equals(BookingStatus.WAITING)) {
@@ -76,7 +76,7 @@ public class BookingService {
         if (!isValidBooking(bookingId)) throw new EntityNotFoundException("Неверный ID бронирования.");
         Booking booking = bookingRepository.findById(bookingId).get();
         Item item = itemRepository.findById(booking.getItem()).get();
-        if (userId != booking.getBooker() && userId != item.getOwner()) {
+        if (!userId.equals(booking.getBooker()) && !userId.equals(item.getOwner())) {
             throw new UserNotFoundException("Данные бронирования доступны только арендатору или владельцу вещи.");
         }
         return BookingMapper.mapBookingToBookingDtoResponse(booking, userRepository.findById(booking.getBooker()).get(),
