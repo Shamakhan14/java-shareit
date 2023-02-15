@@ -82,8 +82,8 @@ public class ItemService {
     public List<ItemDto> search(Long userId, String text) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         Boolean available = true;
-        return ItemMapper.mapToItemDto(itemRepository.
-                findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailable(text, text, available));
+        return ItemMapper.mapToItemDto(itemRepository
+                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailable(text, text, available));
     }
 
     public CommentDto post(Long userId, Long itemId, CommentDtoInc commentDtoInc) {
