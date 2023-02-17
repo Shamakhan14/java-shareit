@@ -6,8 +6,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.shareit.exceptions.DuplicateEmailException;
-import ru.practicum.shareit.exceptions.UnknownStatusException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 
 import javax.persistence.EntityNotFoundException;
@@ -85,7 +85,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleUnknownStatusException(final UnknownStatusException exception) {
+    public Map<String, String> handleMethodArgumentTypeMismatchException(final MethodArgumentTypeMismatchException exception) {
         log.info("{}:{}", exception.getClass().toString(), exception.getMessage());
         return Map.of("error", "Unknown state: UNSUPPORTED_STATUS",
                 "error message", exception.getMessage());

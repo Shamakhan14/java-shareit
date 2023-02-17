@@ -2,6 +2,7 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -10,10 +11,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
 
+    @Transactional
     public UserDto create(UserDto userDto) {
         User user = userRepository.save(UserMapper.mapToNewUser(userDto));
         return UserMapper.mapToUserDto(user);
@@ -24,16 +27,17 @@ public class UserService {
         return UserMapper.mapToUserDto(users);
     }
 
+    @Transactional
     public UserDto update(Long userId, UserDto userDto) {
-        if (!isValidId(userId)) throw new ValidationException("Неверный ID пользователя.");
-        User user = userRepository.findById(userId).get();
-        if (userDto.getName() != null) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ValidationException("Неверный ID пользователя."));
+        if (userDto.getName() != null && !userDto.getName().isBlank()) {
             user.setName(userDto.getName());
         }
-        if (userDto.getEmail() != null) {
+        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
             user.setEmail(userDto.getEmail());
         }
-        return UserMapper.mapToUserDto(userRepository.save(user));
+        return UserMapper.mapToUserDto(user);
     }
 
     public UserDto getById(Long userId) {
@@ -41,6 +45,7 @@ public class UserService {
         return UserMapper.mapToUserDto(userRepository.getById(userId));
     }
 
+    @Transactional
     public void deleteById(Long userId) {
         userRepository.deleteById(userId);
     }

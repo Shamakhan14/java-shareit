@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -16,13 +17,12 @@ import ru.practicum.shareit.user.UserRepository;
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ItemService {
 
     private final ItemRepository itemRepository;
@@ -30,6 +30,7 @@ public class ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
 
+    @Transactional
     public ItemDto create(Long userId, ItemDto itemDto) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         Item item = ItemMapper.mapToNewItem(itemDto);
@@ -61,22 +62,23 @@ public class ItemService {
         }
     }
 
+    @Transactional
     public ItemDto update(Long userId, Long itemId, ItemDto itemDto) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        if (!isValidItemId(itemId)) throw new ItemNotFoundException("Неверный ID вещи.");
-        if (!itemRepository.getById(itemId).getOwner().equals(userId))
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("Неверный ID вещи."));
+        if (!item.getOwner().equals(userId))
             throw new UserNotFoundException("Вещь не принадлежит данному пользователю.");
-        Item item = itemRepository.getById(itemId);
-        if (itemDto.getName() != null) {
+        if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
             item.setName(itemDto.getName());
         }
-        if (itemDto.getDescription() != null) {
+        if (itemDto.getDescription() != null && !itemDto.getDescription().isBlank()) {
             item.setDescription(itemDto.getDescription());
         }
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
         }
-        return ItemMapper.mapToItemDto(itemRepository.save(item));
+        return ItemMapper.mapToItemDto(item);
     }
 
     public List<ItemDto> search(Long userId, String text) {
@@ -86,12 +88,10 @@ public class ItemService {
                 .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailable(text, text, available));
     }
 
+    @Transactional
     public CommentDto post(Long userId, Long itemId, CommentDtoInc commentDtoInc) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         if (!isValidItemId(itemId)) throw new ItemNotFoundException("Неверный ID вещи.");
-        if (commentDtoInc.getText().isBlank() || commentDtoInc.getText() == null) {
-            throw new ValidationException("Комментарий не может быть пустым.");
-        }
         List<Booking> bookings = bookingRepository.findByItem(itemId);
         boolean isValidCommentator = false;
         for (Booking booking: bookings) {
@@ -128,36 +128,71 @@ public class ItemService {
 
     private List<ItemDtoResponse> mapItemsToItemDtoResponses(List<Item> items) {
         List<ItemDtoResponse> responses = new ArrayList<>();
-        for (Item item: items) {
-            LocalDateTime lastEnd = LocalDateTime.MIN;
-            LocalDateTime nextStart = LocalDateTime.MAX;
-            BookingDtoFotItems lastBooking = new BookingDtoFotItems();
-            BookingDtoFotItems nextBooking = new BookingDtoFotItems();
-            LocalDateTime now = LocalDateTime.now();
-            List<Booking> bookings = bookingRepository.findByItem(item.getId());
-            for (Booking booking: bookings) {
-                if (booking.getEnd().isAfter(lastEnd) && booking.getEnd().isBefore(now)) {
-                    lastEnd = booking.getEnd();
-                    lastBooking = BookingMapper.mapToBookingDtoForItems(booking);
-                }
-                if (booking.getStart().isBefore(nextStart) && booking.getStart().isAfter(now)) {
-                    nextStart = booking.getStart();
-                    nextBooking = BookingMapper.mapToBookingDtoForItems(booking);
-                }
+        //list of item ids
+        List<Long> itemIds = items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList());
+        //getting all bookings
+        List<Booking> bookings = bookingRepository.findByItemIn(itemIds);
+        //sorting bookings by item ids
+        Map<Long, List<Booking>> sortedBookings = new HashMap<>();
+        for (Booking booking: bookings) {
+            if (sortedBookings.containsKey(booking.getItem())) {
+                //sortedBookings.get(booking.getItem()).add(booking);
+                List<Booking> newBookings = new ArrayList<>(sortedBookings.get(booking.getItem()));
+                newBookings.add(booking);
+                sortedBookings.put(booking.getItem(), newBookings);
+            } else {
+                sortedBookings.put(booking.getItem(), List.of(booking));
             }
+        }
+        //getting all comments
+        List<Comment> comments = commentRepository.findByItemIn(itemIds);
+        //sorting comments by item ids
+        Map<Long, List<Comment>> sortedComments = new HashMap<>();
+        for (Comment comment: comments) {
+            if (sortedComments.containsKey(comment.getItem())) {
+                sortedComments.get(comment.getItem()).add(comment);
+            } else {
+                sortedComments.put(comment.getItem(), List.of(comment));
+            }
+        }
+        for (Item item: items) {
             ItemDtoResponse response = new ItemDtoResponse();
             response.setId(item.getId());
             response.setName(item.getName());
             response.setDescription(item.getDescription());
             response.setAvailable(item.getAvailable());
-            if (!lastEnd.equals(LocalDateTime.MIN)) {
-                response.setLastBooking(lastBooking);
+            LocalDateTime lastEnd = LocalDateTime.MIN;
+            LocalDateTime nextStart = LocalDateTime.MAX;
+            BookingDtoFotItems lastBooking = new BookingDtoFotItems();
+            BookingDtoFotItems nextBooking = new BookingDtoFotItems();
+            LocalDateTime now = LocalDateTime.now();
+            if (sortedBookings.containsKey(item.getId())) {
+                for (Booking booking : sortedBookings.get(item.getId())) {
+                    if (booking.getEnd().isAfter(lastEnd) && booking.getEnd().isBefore(now)) {
+                        lastEnd = booking.getEnd();
+                        lastBooking = BookingMapper.mapToBookingDtoForItems(booking);
+                    }
+                    if (booking.getStart().isBefore(nextStart) && booking.getStart().isAfter(now)) {
+                        nextStart = booking.getStart();
+                        nextBooking = BookingMapper.mapToBookingDtoForItems(booking);
+                    }
+                }
+                if (!lastEnd.equals(LocalDateTime.MIN)) {
+                    response.setLastBooking(lastBooking);
+                }
+                if (!nextStart.equals(LocalDateTime.MAX)) {
+                    response.setNextBooking(nextBooking);
+                }
             }
-            if (!nextStart.equals(LocalDateTime.MAX)) {
-                response.setNextBooking(nextBooking);
+            if (sortedComments.containsKey(item.getId())) {
+                List<Comment> newComments = new ArrayList<>(sortedComments.get(item.getId()));
+                Collections.sort(newComments, Comparator.comparing(Comment::getCreated));
+                response.setComments(mapToCommentDtos(newComments));
+            } else {
+                response.setComments(List.of());
             }
-            List<Comment> comments = commentRepository.findByItem(item.getId());
-            response.setComments(mapToCommentDtos(comments));
             responses.add(response);
         }
         Collections.sort(responses, Comparator.comparing(ItemDtoResponse::getId));

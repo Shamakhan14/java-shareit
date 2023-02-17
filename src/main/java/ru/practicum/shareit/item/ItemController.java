@@ -10,6 +10,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoResponse;
 import ru.practicum.shareit.user.Create;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -60,7 +61,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentDto post(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId,
-                           @RequestBody CommentDtoInc commentDtoInc) {
+                           @RequestBody @Valid CommentDtoInc commentDtoInc) {
         CommentDto commentDto = itemService.post(userId, itemId, commentDtoInc);
         log.info("Комментарий успешно загружен.");
         return commentDto;

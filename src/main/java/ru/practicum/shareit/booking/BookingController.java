@@ -21,7 +21,7 @@ public class BookingController {
     public BookingDtoResponse create(@RequestHeader("X-Sharer-User-Id") Long userId,
                                      @RequestBody @Validated BookingDtoCreate bookingDtoCreate) {
         BookingDtoResponse response = bookingService.create(userId, bookingDtoCreate);
-        log.info("Брониерование успешно создано.");
+        log.info("Бронирование успешно создано.");
         return response;
     }
 
@@ -36,13 +36,13 @@ public class BookingController {
     @GetMapping("/{bookingId}")
     public BookingDtoResponse get(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long bookingId) {
         BookingDtoResponse response = bookingService.get(userId, bookingId);
-        log.info("Выведена информация о бронировании.");
+        log.info("Выведена информация о бронировании: {}.", response.toString());
         return response;
     }
 
     @GetMapping
     public List<BookingDtoResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                           @RequestParam(defaultValue = "ALL") String state) {
+                                           @RequestParam(defaultValue = "ALL") State state) {
         List<BookingDtoResponse> response = bookingService.getAll(userId, state);
         log.info("Выведен список бронирований пользователя.");
         return response;
@@ -50,7 +50,7 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<BookingDtoResponse> getAllForItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                               @RequestParam(defaultValue = "ALL") String state) {
+                                               @RequestParam(defaultValue = "ALL") State state) {
         List<BookingDtoResponse> response = bookingService.getAllForItems(userId, state);
         log.info("Выведен список бронирований пользователя.");
         return response;
