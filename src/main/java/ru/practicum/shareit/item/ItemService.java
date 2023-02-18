@@ -150,7 +150,7 @@ public class ItemService {
                 for (int i = 0; i < bookings.size(); i++) {
                     if (!bookings.get(i).getStart().isAfter(now)) {
                         response.setLastBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(i)));
-                        response.setNextBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(i-1)));
+                        response.setNextBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(i - 1)));
                         break;
                     }
                 }
