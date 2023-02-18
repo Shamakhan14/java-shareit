@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
@@ -12,13 +13,17 @@ import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
 @RequiredArgsConstructor
@@ -45,19 +50,16 @@ public class ItemService {
     }
 
     public ItemDtoResponse getById(Long userId, Long itemId) {
-        if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        if (!isValidItemId(itemId)) throw new EntityNotFoundException("Неверный ID вещи.");
-        Item item = itemRepository.findById(itemId).get();
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Неверный ID пользователя."));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("Неверный ID вещи."));
         if (item.getOwner().equals(userId)) {
-            return mapItemsToItemDtoResponses(List.of(itemRepository.getById(itemId))).get(0);
+            return mapItemsToItemDtoResponses(List.of(item)).get(0);
         } else {
-            ItemDtoResponse response = new ItemDtoResponse();
-            response.setId(item.getId());
-            response.setName(item.getName());
-            response.setDescription(item.getDescription());
-            response.setAvailable(item.getAvailable());
+            ItemDtoResponse response = ItemMapper.mapToResponseWithoutBookings(item);
             List<Comment> comments = commentRepository.findByItem(itemId);
-            response.setComments(mapToCommentDtos(comments));
+            response.setComments(CommentMapper.mapToCommentDtos(comments));
             return response;
         }
     }
@@ -90,24 +92,19 @@ public class ItemService {
 
     @Transactional
     public CommentDto post(Long userId, Long itemId, CommentDtoInc commentDtoInc) {
-        if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        if (!isValidItemId(itemId)) throw new ItemNotFoundException("Неверный ID вещи.");
-        List<Booking> bookings = bookingRepository.findByItem(itemId);
-        boolean isValidCommentator = false;
-        for (Booking booking: bookings) {
-            if (booking.getBooker().equals(userId) && booking.getStatus().equals(BookingStatus.APPROVED) &&
-                booking.getEnd().isBefore(LocalDateTime.now())) {
-                isValidCommentator = true;
-            }
-        }
-        if (!isValidCommentator) throw new ValidationException("Данный пользователь не может оставить комментарий.");
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Неверный ID пользователя."));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("Неверный ID вещи."));
+        List<Booking> bookings = bookingRepository.findByItemAndValidBooker(itemId, userId, BookingStatus.APPROVED,
+                LocalDateTime.now());
+        if (bookings.isEmpty()) throw new ValidationException("Данный пользователь не может оставить комментарий.");
         Comment comment = new Comment();
         comment.setText(commentDtoInc.getText());
         comment.setItem(itemId);
-        comment.setAuthor(userId);
+        comment.setAuthor(user);
         comment.setCreated(LocalDateTime.now());
-        return CommentMapper.mapToCommentDto(commentRepository.save(comment),
-                userRepository.findById(userId).get().getName());
+        return CommentMapper.mapToCommentDto(commentRepository.save(comment));
     }
 
     private boolean isValidOwner(Long userId) {
@@ -118,93 +115,49 @@ public class ItemService {
         }
     }
 
-    private boolean isValidItemId(Long itemId) {
-        if (itemRepository.findById(itemId).isPresent()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     private List<ItemDtoResponse> mapItemsToItemDtoResponses(List<Item> items) {
         List<ItemDtoResponse> responses = new ArrayList<>();
-        //list of item ids
         List<Long> itemIds = items.stream()
                 .map(Item::getId)
-                .collect(Collectors.toList());
-        //getting all bookings
-        List<Booking> bookings = bookingRepository.findByItemIn(itemIds);
-        //sorting bookings by item ids
-        Map<Long, List<Booking>> sortedBookings = new HashMap<>();
-        for (Booking booking: bookings) {
-            if (sortedBookings.containsKey(booking.getItem())) {
-                //sortedBookings.get(booking.getItem()).add(booking);
-                List<Booking> newBookings = new ArrayList<>(sortedBookings.get(booking.getItem()));
-                newBookings.add(booking);
-                sortedBookings.put(booking.getItem(), newBookings);
-            } else {
-                sortedBookings.put(booking.getItem(), List.of(booking));
-            }
-        }
-        //getting all comments
-        List<Comment> comments = commentRepository.findByItemIn(itemIds);
-        //sorting comments by item ids
-        Map<Long, List<Comment>> sortedComments = new HashMap<>();
-        for (Comment comment: comments) {
-            if (sortedComments.containsKey(comment.getItem())) {
-                sortedComments.get(comment.getItem()).add(comment);
-            } else {
-                sortedComments.put(comment.getItem(), List.of(comment));
-            }
-        }
+                .collect(toList());
+        //creating map of item/bookings
+        Map<Item, List<Booking>> approvedBookings = bookingRepository.findByItemInAndStatus(itemIds,
+                        BookingStatus.APPROVED, Sort.by(DESC, "start")).stream()
+                        .collect(groupingBy(Booking::getItem, toList()));
+        //creating map of item id/comments
+        Map<Long, List<Comment>> sortedComments =
+                commentRepository.findByItemIn(itemIds, Sort.by(DESC, "created"))
+                        .stream()
+                        .collect(groupingBy(Comment::getItem, toList()));
+        //transforming items into dto and filling the result list
         for (Item item: items) {
+            //filling spaces
             ItemDtoResponse response = new ItemDtoResponse();
             response.setId(item.getId());
             response.setName(item.getName());
             response.setDescription(item.getDescription());
             response.setAvailable(item.getAvailable());
-            LocalDateTime lastEnd = LocalDateTime.MIN;
-            LocalDateTime nextStart = LocalDateTime.MAX;
-            BookingDtoFotItems lastBooking = new BookingDtoFotItems();
-            BookingDtoFotItems nextBooking = new BookingDtoFotItems();
+            //filling comments
+            response.setComments(CommentMapper.mapToCommentDtos(sortedComments.getOrDefault(item.getId(),
+                    Collections.emptyList())));
+            //filling bookings
+            List<Booking> bookings = approvedBookings.getOrDefault(item, null);
             LocalDateTime now = LocalDateTime.now();
-            if (sortedBookings.containsKey(item.getId())) {
-                for (Booking booking : sortedBookings.get(item.getId())) {
-                    if (booking.getEnd().isAfter(lastEnd) && booking.getEnd().isBefore(now)) {
-                        lastEnd = booking.getEnd();
-                        lastBooking = BookingMapper.mapToBookingDtoForItems(booking);
-                    }
-                    if (booking.getStart().isBefore(nextStart) && booking.getStart().isAfter(now)) {
-                        nextStart = booking.getStart();
-                        nextBooking = BookingMapper.mapToBookingDtoForItems(booking);
-                    }
-                }
-                if (!lastEnd.equals(LocalDateTime.MIN)) {
-                    response.setLastBooking(lastBooking);
-                }
-                if (!nextStart.equals(LocalDateTime.MAX)) {
-                    response.setNextBooking(nextBooking);
-                }
-            }
-            if (sortedComments.containsKey(item.getId())) {
-                List<Comment> newComments = new ArrayList<>(sortedComments.get(item.getId()));
-                Collections.sort(newComments, Comparator.comparing(Comment::getCreated));
-                response.setComments(mapToCommentDtos(newComments));
+            if (bookings == null) {
+                response.setNextBooking(null);
+                response.setLastBooking(null);
             } else {
-                response.setComments(List.of());
+                for (int i = 0; i < bookings.size(); i++) {
+                    if (!bookings.get(i).getStart().isAfter(now)) {
+                        response.setLastBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(i)));
+                        response.setNextBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(i-1)));
+                        break;
+                    }
+                }
             }
             responses.add(response);
         }
         Collections.sort(responses, Comparator.comparing(ItemDtoResponse::getId));
         return responses;
-    }
-
-    private List<CommentDto> mapToCommentDtos(List<Comment> comments) {
-        List<CommentDto> commentDtos = new ArrayList<>();
-        for (Comment comment: comments) {
-            commentDtos.add(CommentMapper.mapToCommentDto(comment,
-                    userRepository.findById(comment.getAuthor()).get().getName()));
-        }
-        return commentDtos;
     }
 }

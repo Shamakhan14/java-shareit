@@ -11,12 +11,12 @@ import ru.practicum.shareit.user.User;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BookingMapper {
 
-    public static Booking mapBookingDtoCreateToBooking(BookingDtoCreate bookingDtoCreate, Long userId) {
+    public static Booking mapBookingDtoCreateToBooking(BookingDtoCreate bookingDtoCreate, Item item, User user) {
         Booking booking = new Booking();
         booking.setStart(bookingDtoCreate.getStart());
         booking.setEnd(bookingDtoCreate.getEnd());
-        booking.setItem(bookingDtoCreate.getItemId());
-        booking.setBooker(userId);
+        booking.setItem(item);
+        booking.setBooker(user);
         booking.setStatus(BookingStatus.WAITING);
         return booking;
     }
@@ -40,7 +40,7 @@ public class BookingMapper {
         bookingDtoFotItems.setStart(booking.getStart());
         bookingDtoFotItems.setEnd(booking.getEnd());
         bookingDtoFotItems.setStatus(booking.getStatus());
-        bookingDtoFotItems.setBookerId(booking.getBooker());
+        bookingDtoFotItems.setBookerId(booking.getBooker().getId());
         return bookingDtoFotItems;
     }
 }

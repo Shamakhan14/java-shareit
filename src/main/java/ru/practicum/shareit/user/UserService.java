@@ -41,20 +41,13 @@ public class UserService {
     }
 
     public UserDto getById(Long userId) {
-        if (!isValidId(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        return UserMapper.mapToUserDto(userRepository.getById(userId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Неверный ID пользователя."));
+        return UserMapper.mapToUserDto(user);
     }
 
     @Transactional
     public void deleteById(Long userId) {
         userRepository.deleteById(userId);
-    }
-
-    private boolean isValidId(Long userId) {
-        if (userRepository.getById(userId) != null) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }

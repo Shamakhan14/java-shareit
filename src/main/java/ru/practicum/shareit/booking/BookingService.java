@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDtoCreate;
@@ -43,7 +44,7 @@ public class BookingService {
         if (userId.equals(item.getOwner())) {
             throw new EntityNotFoundException("Невозможно забронировать свою вещь.");
         }
-        Booking booking = BookingMapper.mapBookingDtoCreateToBooking(bookingDtoCreate, userId);
+        Booking booking = BookingMapper.mapBookingDtoCreateToBooking(bookingDtoCreate, item, user);
         Booking response = bookingRepository.save(booking);
         return BookingMapper.mapBookingToBookingDtoResponse(response, user, item);
     }
@@ -56,7 +57,7 @@ public class BookingService {
         if (!status.equals("true") && !status.equals("false")) {
             throw new ValidationException("Неверный статус бронирования.");
         }
-        Item item = itemRepository.findById(booking.getItem()).get();
+        Item item = booking.getItem();
         if (!item.getOwner().equals(userId)) {
             throw new UserNotFoundException("Статус бронирования вещи может менять только ее владелец.");
         }
@@ -68,20 +69,18 @@ public class BookingService {
         } else {
             booking.setStatus(BookingStatus.REJECTED);
         }
-        return BookingMapper.mapBookingToBookingDtoResponse(booking,
-                userRepository.findById(booking.getBooker()).get(), item);
+        return BookingMapper.mapBookingToBookingDtoResponse(booking, booking.getBooker(), item);
     }
 
     public BookingDtoResponse get(Long userId, Long bookingId) {
         if (!isValidRequester(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        if (!isValidBooking(bookingId)) throw new EntityNotFoundException("Неверный ID бронирования.");
-        Booking booking = bookingRepository.findById(bookingId).get();
-        Item item = itemRepository.findById(booking.getItem()).get();
-        if (!userId.equals(booking.getBooker()) && !userId.equals(item.getOwner())) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new EntityNotFoundException("Неверный ID бронирования."));
+        Item item = booking.getItem();
+        if (!userId.equals(booking.getBooker().getId()) && !userId.equals(item.getOwner())) {
             throw new UserNotFoundException("Данные бронирования доступны только арендатору или владельцу вещи.");
         }
-        return BookingMapper.mapBookingToBookingDtoResponse(booking, userRepository.findById(booking.getBooker()).get(),
-                item);
+        return BookingMapper.mapBookingToBookingDtoResponse(booking, booking.getBooker(), item);
     }
 
     public List<BookingDtoResponse> getAll(Long userId, State state) {
@@ -92,13 +91,16 @@ public class BookingService {
                 bookings = bookingRepository.findByBookerOrderByStartDesc(userId);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findCurrent(userId, LocalDateTime.now());
+                bookings = bookingRepository.findCurrent(userId, LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "start"));
                 break;
             case PAST:
-                bookings = bookingRepository.findPast(userId, LocalDateTime.now());
+                bookings = bookingRepository.findPast(userId, LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "start"));
                 break;
             case FUTURE:
-                bookings = bookingRepository.findFuture(userId, LocalDateTime.now());
+                bookings = bookingRepository.findFuture(userId, LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "start"));
                 break;
             case WAITING:
                 bookings = bookingRepository.findByBookerAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
@@ -119,22 +121,28 @@ public class BookingService {
         List<Booking> bookings;
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findAllForItems(userId);
+                bookings = bookingRepository.findAllForItems(userId,
+                        Sort.by(Sort.Direction.DESC, "start"));
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllForItemsCurrent(userId, LocalDateTime.now());
+                bookings = bookingRepository.findAllForItemsCurrent(userId, LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "start"));
                 break;
             case PAST:
-                bookings = bookingRepository.findAllForItemsPast(userId, LocalDateTime.now());
+                bookings = bookingRepository.findAllForItemsPast(userId, LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "start"));
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllForItemsFuture(userId, LocalDateTime.now());
+                bookings = bookingRepository.findAllForItemsFuture(userId, LocalDateTime.now(),
+                        Sort.by(Sort.Direction.DESC, "start"));
                 break;
             case WAITING:
-                bookings = bookingRepository.findAllForItemsStatus(userId, BookingStatus.WAITING);
+                bookings = bookingRepository.findAllForItemsStatus(userId, BookingStatus.WAITING,
+                        Sort.by(Sort.Direction.DESC, "start"));
                 break;
             case REJECTED:
-                bookings = bookingRepository.findAllForItemsStatus(userId, BookingStatus.REJECTED);
+                bookings = bookingRepository.findAllForItemsStatus(userId, BookingStatus.REJECTED,
+                        Sort.by(Sort.Direction.DESC, "start"));
                 break;
             default:
                 throw new UnknownStatusException("Unknown state: UNSUPPORTED_STATUS");
@@ -170,18 +178,18 @@ public class BookingService {
     private List<BookingDtoResponse> mapBookingsIntoResponse(List<Booking> bookings) {
         List<BookingDtoResponse> response = new ArrayList<>();
         List<Long> itemIds = bookings.stream()
-                .map(Booking::getItem)
+                .map((booking) -> booking.getItem().getId())
                 .collect(Collectors.toList());
         List<Long> bookerIds = bookings.stream()
-                .map(Booking::getBooker)
+                .map((booking) -> booking.getBooker().getId())
                 .collect(Collectors.toList());
         List<Item> items = itemRepository.findByIdIn(itemIds);
         List<User> bookers = userRepository.findByIdIn(bookerIds);
         for (Booking booking: bookings) {
             for (Item item: items) {
-                if (booking.getItem().equals(item.getId())) {
+                if (booking.getItem().getId().equals(item.getId())) {
                     for (User user: bookers) {
-                        if (booking.getBooker().equals(user.getId())) {
+                        if (booking.getBooker().getId().equals(user.getId())) {
                             response.add(BookingMapper.mapBookingToBookingDtoResponse(booking, user, item));
                             break;
                         }
