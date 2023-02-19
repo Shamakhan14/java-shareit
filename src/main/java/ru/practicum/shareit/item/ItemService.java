@@ -147,7 +147,8 @@ public class ItemService {
                         break;
                     }
                     if (response.getLastBooking() == null) {
-                        response.setNextBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(bookings.size()-1)));
+                        response.setNextBooking(BookingMapper
+                                .mapToBookingDtoForItems(bookings.get(bookings.size() - 1)));
                     }
                 }
             }
