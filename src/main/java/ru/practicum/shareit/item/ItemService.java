@@ -45,7 +45,7 @@ public class ItemService {
 
     public List<ItemDtoResponse> getAll(Long userId) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        List<Item> items = itemRepository.findByOwner(userId);
+        List<Item> items = itemRepository.findByOwnerOrderById(userId);
         return mapItemsToItemDtoResponses(items);
     }
 
@@ -99,11 +99,7 @@ public class ItemService {
         List<Booking> bookings = bookingRepository.findByItemAndValidBooker(itemId, userId, BookingStatus.APPROVED,
                 LocalDateTime.now());
         if (bookings.isEmpty()) throw new ValidationException("Данный пользователь не может оставить комментарий.");
-        Comment comment = new Comment();
-        comment.setText(commentDtoInc.getText());
-        comment.setItem(itemId);
-        comment.setAuthor(user);
-        comment.setCreated(LocalDateTime.now());
+        Comment comment = CommentMapper.mapToComment(commentDtoInc, itemId, user);
         return CommentMapper.mapToCommentDto(commentRepository.save(comment));
     }
 
@@ -132,32 +128,31 @@ public class ItemService {
         //transforming items into dto and filling the result list
         for (Item item: items) {
             //filling spaces
-            ItemDtoResponse response = new ItemDtoResponse();
-            response.setId(item.getId());
-            response.setName(item.getName());
-            response.setDescription(item.getDescription());
-            response.setAvailable(item.getAvailable());
-            //filling comments
+            ItemDtoResponse response = ItemMapper.mapToResponseWithoutBookings(item);
             response.setComments(CommentMapper.mapToCommentDtos(sortedComments.getOrDefault(item.getId(),
                     Collections.emptyList())));
             //filling bookings
-            List<Booking> bookings = approvedBookings.getOrDefault(item, null);
+            List<Booking> bookings = approvedBookings.getOrDefault(item, Collections.emptyList());
             LocalDateTime now = LocalDateTime.now();
-            if (bookings == null) {
+            if (bookings.size() == 0) {
                 response.setNextBooking(null);
                 response.setLastBooking(null);
             } else {
                 for (int i = 0; i < bookings.size(); i++) {
                     if (!bookings.get(i).getStart().isAfter(now)) {
                         response.setLastBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(i)));
-                        response.setNextBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(i - 1)));
+                        if (i != 0) {
+                            response.setNextBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(i - 1)));
+                        }
                         break;
+                    }
+                    if (response.getLastBooking() == null) {
+                        response.setNextBooking(BookingMapper.mapToBookingDtoForItems(bookings.get(bookings.size()-1)));
                     }
                 }
             }
             responses.add(response);
         }
-        Collections.sort(responses, Comparator.comparing(ItemDtoResponse::getId));
         return responses;
     }
 }

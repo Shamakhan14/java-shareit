@@ -16,9 +16,7 @@ import ru.practicum.shareit.user.UserRepository;
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +44,7 @@ public class BookingService {
         }
         Booking booking = BookingMapper.mapBookingDtoCreateToBooking(bookingDtoCreate, item, user);
         Booking response = bookingRepository.save(booking);
-        return BookingMapper.mapBookingToBookingDtoResponse(response, user, item);
+        return BookingMapper.mapBookingToBookingDtoResponse(response);
     }
 
     @Transactional
@@ -69,18 +67,17 @@ public class BookingService {
         } else {
             booking.setStatus(BookingStatus.REJECTED);
         }
-        return BookingMapper.mapBookingToBookingDtoResponse(booking, booking.getBooker(), item);
+        return BookingMapper.mapBookingToBookingDtoResponse(booking);
     }
 
     public BookingDtoResponse get(Long userId, Long bookingId) {
         if (!isValidRequester(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new EntityNotFoundException("Неверный ID бронирования."));
-        Item item = booking.getItem();
-        if (!userId.equals(booking.getBooker().getId()) && !userId.equals(item.getOwner())) {
+        if (!userId.equals(booking.getBooker().getId()) && !userId.equals(booking.getItem().getOwner())) {
             throw new UserNotFoundException("Данные бронирования доступны только арендатору или владельцу вещи.");
         }
-        return BookingMapper.mapBookingToBookingDtoResponse(booking, booking.getBooker(), item);
+        return BookingMapper.mapBookingToBookingDtoResponse(booking);
     }
 
     public List<BookingDtoResponse> getAll(Long userId, State state) {
@@ -111,13 +108,16 @@ public class BookingService {
             default:
                 throw new UnknownStatusException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return mapBookingsIntoResponse(bookings);
+        return BookingMapper.mapBookingsIntoResponse(bookings);
     }
 
     public List<BookingDtoResponse> getAllForItems(Long userId, State state) {
-        if (!isValidRequester(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        if (itemRepository.findByOwner(userId).size() == 0) throw new EntityNotFoundException("У данного пользователя" +
-                " нет вещей.");
+        if (!isValidRequester(userId)) {
+            throw new UserNotFoundException("Неверный ID пользователя.");
+        }
+        if (itemRepository.findByOwnerOrderById(userId).size() == 0) {
+            throw new EntityNotFoundException("У данного пользователя нет вещей.");
+        }
         List<Booking> bookings;
         switch (state) {
             case ALL:
@@ -147,7 +147,7 @@ public class BookingService {
             default:
                 throw new UnknownStatusException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return mapBookingsIntoResponse(bookings);
+        return BookingMapper.mapBookingsIntoResponse(bookings);
     }
 
     private boolean isValidRequester(Long userId) {
@@ -165,39 +165,5 @@ public class BookingService {
         } else {
             return true;
         }
-    }
-
-    private boolean isValidBooking(Long bookingId) {
-        if (bookingRepository.findById(bookingId).isPresent()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private List<BookingDtoResponse> mapBookingsIntoResponse(List<Booking> bookings) {
-        List<BookingDtoResponse> response = new ArrayList<>();
-        List<Long> itemIds = bookings.stream()
-                .map((booking) -> booking.getItem().getId())
-                .collect(Collectors.toList());
-        List<Long> bookerIds = bookings.stream()
-                .map((booking) -> booking.getBooker().getId())
-                .collect(Collectors.toList());
-        List<Item> items = itemRepository.findByIdIn(itemIds);
-        List<User> bookers = userRepository.findByIdIn(bookerIds);
-        for (Booking booking: bookings) {
-            for (Item item: items) {
-                if (booking.getItem().getId().equals(item.getId())) {
-                    for (User user: bookers) {
-                        if (booking.getBooker().getId().equals(user.getId())) {
-                            response.add(BookingMapper.mapBookingToBookingDtoResponse(booking, user, item));
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-        return response;
     }
 }

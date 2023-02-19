@@ -8,6 +8,9 @@ import ru.practicum.shareit.item.dto.BookingDtoFotItems;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BookingMapper {
 
@@ -21,17 +24,21 @@ public class BookingMapper {
         return booking;
     }
 
-    public static BookingDtoResponse mapBookingToBookingDtoResponse(Booking booking, User user, Item item) {
-        BookingDtoResponse response = new BookingDtoResponse();
-        response.setId(booking.getId());
-        response.setStart(booking.getStart());
-        response.setEnd(booking.getEnd());
-        response.setStatus(booking.getStatus());
-        BookingDtoResponse.Booker booker = new BookingDtoResponse.Booker(user.getId(), user.getName());
-        response.setBooker(booker);
-        BookingDtoResponse.Item newItem = new BookingDtoResponse.Item(item.getId(), item.getName());
-        response.setItem(newItem);
-        return response;
+    public static BookingDtoResponse mapBookingToBookingDtoResponse(Booking booking) {
+        return new BookingDtoResponse(
+                booking.getId(),
+                booking.getStart(),
+                booking.getEnd(),
+                booking.getStatus(),
+                new BookingDtoResponse.Booker(
+                        booking.getBooker().getId(),
+                        booking.getBooker().getName()
+                ),
+                new BookingDtoResponse.Item(
+                        booking.getItem().getId(),
+                        booking.getItem().getName()
+                )
+        );
     }
 
     public static BookingDtoFotItems mapToBookingDtoForItems(Booking booking) {
@@ -42,5 +49,13 @@ public class BookingMapper {
         bookingDtoFotItems.setStatus(booking.getStatus());
         bookingDtoFotItems.setBookerId(booking.getBooker().getId());
         return bookingDtoFotItems;
+    }
+
+    public static List<BookingDtoResponse> mapBookingsIntoResponse(List<Booking> bookings) {
+        List<BookingDtoResponse> responses = new ArrayList<>();
+        for (Booking booking: bookings) {
+            responses.add(mapBookingToBookingDtoResponse(booking));
+        }
+        return responses;
     }
 }
