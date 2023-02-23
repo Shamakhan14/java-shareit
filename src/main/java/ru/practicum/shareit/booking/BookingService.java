@@ -159,8 +159,7 @@ public class BookingService {
     }
 
     private boolean isValidBookingDto(BookingDtoCreate bookingDtoCreate) {
-        if (bookingDtoCreate.getStart().isAfter(bookingDtoCreate.getEnd()) ||
-            bookingDtoCreate.getStart().equals(bookingDtoCreate.getEnd())) {
+        if (!bookingDtoCreate.getStart().isBefore(bookingDtoCreate.getEnd())) {
             return false;
         } else {
             return true;
