@@ -2,7 +2,8 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.DuplicateEmailException;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.ValidationException;
@@ -10,53 +11,43 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
+    @Transactional
     public UserDto create(UserDto userDto) {
-        if (isDuplicate(userDto)) throw new DuplicateEmailException("Данный Email уже существует.");
-        User user = userStorage.create(UserMapper.mapToNewUser(userDto));
+        User user = userRepository.save(UserMapper.mapToNewUser(userDto));
         return UserMapper.mapToUserDto(user);
     }
 
     public List<UserDto> getAll() {
-        List<User> users = userStorage.getAll();
+        List<User> users = userRepository.findAll();
         return UserMapper.mapToUserDto(users);
     }
 
-    public UserDto update(int userId, UserDto userDto) {
-        if (!isValidId(userId)) throw new ValidationException("Неверный ID пользователя.");
-        if (userDto.getEmail() != null && isDuplicate(userDto))
-            throw new DuplicateEmailException("Данный Email уже существует.");
-        User user = UserMapper.mapToNewUser(userDto);
-        user.setId(userId);
-        return UserMapper.mapToUserDto(userStorage.update(user));
-    }
-
-    public UserDto getById(int userId) {
-        if (!isValidId(userId)) throw new ValidationException("Неверный ID пользователя.");
-        return UserMapper.mapToUserDto(userStorage.getById(userId));
-    }
-
-    public void deleteById(int userId) {
-        userStorage.deleteById(userId);
-    }
-
-    private boolean isDuplicate(UserDto userDto) {
-        for (User user: userStorage.getAll()) {
-            if (userDto.getEmail().equals(user.getEmail()) && userDto.getId() != user.getId()) {
-                return true;
-            }
+    @Transactional
+    public UserDto update(Long userId, UserDto userDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ValidationException("Неверный ID пользователя."));
+        if (userDto.getName() != null && !userDto.getName().isBlank()) {
+            user.setName(userDto.getName());
         }
-        return false;
+        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
+            user.setEmail(userDto.getEmail());
+        }
+        return UserMapper.mapToUserDto(user);
     }
 
-    private boolean isValidId(int userId) {
-        if (userStorage.getById(userId) != null) {
-            return true;
-        } else {
-            return false;
-        }
+    public UserDto getById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Неверный ID пользователя."));
+        return UserMapper.mapToUserDto(user);
+    }
+
+    @Transactional
+    public void deleteById(Long userId) {
+        userRepository.deleteById(userId);
     }
 }

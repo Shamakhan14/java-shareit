@@ -30,21 +30,21 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto update(@PathVariable int userId, @RequestBody @Validated(Update.class) UserDto userDto) {
+    public UserDto update(@PathVariable Long userId, @RequestBody @Validated(Update.class) UserDto userDto) {
         UserDto response = userService.update(userId, userDto);
         log.info("Пользователь успешно обновлен.");
         return response;
     }
 
     @GetMapping("/{userId}")
-    public UserDto getUserById(@PathVariable int userId) {
+    public UserDto getUserById(@PathVariable Long userId) {
         UserDto response = userService.getById(userId);
         log.info("Запрошен данные пользователя {}.", response.getName());
         return response;
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUserById(@PathVariable int userId) {
+    public void deleteUserById(@PathVariable Long userId) {
         userService.deleteById(userId);
         log.info("Данные пользователя удалены.");
     }

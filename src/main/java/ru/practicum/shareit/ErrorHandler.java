@@ -6,9 +6,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.shareit.exceptions.DuplicateEmailException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.ValidationException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Map;
@@ -70,6 +72,22 @@ public class ErrorHandler {
     public Map<String, String> handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
         log.info("{}:{}", exception.getClass().toString(), exception.getMessage());
         return Map.of("error", exception.getClass().toString(),
+                "error message", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleEntityNotFoundException(final EntityNotFoundException exception) {
+        log.info("{}:{}", exception.getClass().toString(), exception.getMessage());
+        return Map.of("error", exception.getClass().toString(),
+                "error message", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleMethodArgumentTypeMismatchException(final MethodArgumentTypeMismatchException exception) {
+        log.info("{}:{}", exception.getClass().toString(), exception.getMessage());
+        return Map.of("error", "Unknown state: UNSUPPORTED_STATUS",
                 "error message", exception.getMessage());
     }
 }
