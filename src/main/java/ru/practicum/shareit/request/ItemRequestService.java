@@ -15,7 +15,6 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
-import javax.validation.ValidationException;
 import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;

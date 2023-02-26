@@ -154,7 +154,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void createItemIdNullTest() throws Exception{
+    void createItemIdNullTest() throws Exception {
         BookingDtoCreate bookingDtoCreate = new BookingDtoCreate(null,
                 LocalDateTime.of(2024, 11, 11, 11, 11, 11),
                 LocalDateTime.of(2025, 11, 11, 11, 11, 11));
@@ -169,7 +169,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void createStartNullTest() throws Exception{
+    void createStartNullTest() throws Exception {
         BookingDtoCreate bookingDtoCreate = new BookingDtoCreate(
                 1L,
                 null,
@@ -185,7 +185,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void createEndNullTest() throws Exception{
+    void createEndNullTest() throws Exception {
         BookingDtoCreate bookingDtoCreate = new BookingDtoCreate(
                 1L,
                 LocalDateTime.of(2024, 11, 11, 11, 11, 11),
@@ -201,7 +201,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void createStartPastTest() throws Exception{
+    void createStartPastTest() throws Exception {
         BookingDtoCreate bookingDtoCreate = new BookingDtoCreate(null,
                 LocalDateTime.of(2020, 11, 11, 11, 11, 11),
                 LocalDateTime.of(2025, 11, 11, 11, 11, 11));
@@ -216,7 +216,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void createEndPastTest() throws Exception{
+    void createEndPastTest() throws Exception {
         BookingDtoCreate bookingDtoCreate = new BookingDtoCreate(null,
                 LocalDateTime.of(2024, 11, 11, 11, 11, 11),
                 LocalDateTime.of(2020, 11, 11, 11, 11, 11));

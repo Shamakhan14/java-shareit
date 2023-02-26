@@ -19,7 +19,6 @@ import javax.persistence.EntityNotFoundException;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -104,8 +103,7 @@ public class BookingService {
                 bookings = bookingRepository.findPastPageable(userId, LocalDateTime.now(), pageable);
                 break;
             case FUTURE:
-                pageable = PageRequest.of(from / size, size,
-                        Sort.by(Sort.Direction.DESC, "start"));
+                pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start"));
                 bookings = bookingRepository.findFuturePageable(userId, LocalDateTime.now(), pageable);
                 break;
             case WAITING:
@@ -114,7 +112,7 @@ public class BookingService {
                         BookingStatus.WAITING, pageable);
                 break;
             case REJECTED:
-                pageable = PageRequest.of(from / size, size );
+                pageable = PageRequest.of(from / size, size);
                 bookings = bookingRepository.findByBookerAndStatusOrderByStartDescPageable(userId,
                         BookingStatus.REJECTED, pageable);
                 break;
