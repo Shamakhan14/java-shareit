@@ -41,7 +41,7 @@ public class ItemRequestRepositoryTest {
         itemRequest.setCreated(LocalDateTime.now());
         em.persist(itemRequest);
 
-        List<ItemRequest> result = repository.findAllWithoutUser(2L, Sort.by(DESC, "created"));
+        List<ItemRequest> result = repository.findAllWithoutUser(10L, Sort.by(DESC, "created"));
 
         assertThat(result, hasSize(1));
         assertThat(result.get(0).getId(), notNullValue());
@@ -65,7 +65,7 @@ public class ItemRequestRepositoryTest {
 
         Pageable pageable = PageRequest.of(0, 20, Sort.by(DESC, "id"));
 
-        List<ItemRequest> result = repository.findAllPageable(2L, pageable);
+        List<ItemRequest> result = repository.findAllPageable(10L, pageable);
 
         assertThat(result, hasSize(1));
         assertThat(result.get(0).getId(), notNullValue());
