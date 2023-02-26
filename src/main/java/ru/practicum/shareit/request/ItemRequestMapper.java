@@ -34,19 +34,19 @@ public class ItemRequestMapper {
         );
     }
 
-    public static List<Response> mapItemsToResponses(List<Item> items) {
-        List<Response> responses = new ArrayList<>();
+    public static List<RequestResponse> mapItemsToResponses(List<Item> items) {
+        List<RequestResponse> respons = new ArrayList<>();
         for (Item item: items) {
-            Response response = new Response();
-            response.setId(item.getId());
-            response.setName(item.getName());
-            response.setUserId(item.getOwner());
-            response.setDescription(item.getDescription());
-            response.setAvailable(item.getAvailable());
-            response.setRequestId(item.getRequest());
-            responses.add(response);
+            RequestResponse requestResponse = new RequestResponse();
+            requestResponse.setId(item.getId());
+            requestResponse.setName(item.getName());
+            requestResponse.setUserId(item.getOwner());
+            requestResponse.setDescription(item.getDescription());
+            requestResponse.setAvailable(item.getAvailable());
+            requestResponse.setRequestId(item.getRequest());
+            respons.add(requestResponse);
         }
-        return responses;
+        return respons;
     }
 
     public static List<ItemRequestDtoOut> mapRequestsToOutcomingRequests(List<ItemRequest> requests,

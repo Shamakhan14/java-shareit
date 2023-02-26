@@ -46,22 +46,11 @@ public class ItemService {
         return ItemMapper.mapToItemDto(itemRepository.save(item));
     }
 
-    public List<ItemDtoResponse> getAll(Long userId, Optional<Integer> from, Optional<Integer> size) {
+    public List<ItemDtoResponse> getAll(Long userId, Integer from, Integer size) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        if (from.isEmpty() && size.isEmpty()) {
-            List<Item> items = itemRepository.findByOwnerOrderById(userId);
-            return mapItemsToItemDtoResponses(items);
-        } else {
-            if (from.isEmpty() || from.get() < 0) {
-                throw new ValidationException("Неверный индекс элемента.");
-            }
-            if (size.isEmpty() || size.get() <= 0) {
-                throw new ValidationException("Неверное количество элементов.");
-            }
-            Pageable pageable = PageRequest.of(from.get() / size.get(), size.get(), Sort.by(ASC, "id"));
-            List<Item> items = itemRepository.findByOwnerOrderByIdPageable(userId, pageable);
-            return mapItemsToItemDtoResponses(items);
-        }
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(ASC, "id"));
+        List<Item> items = itemRepository.findByOwnerOrderByIdPageable(userId, pageable);
+        return mapItemsToItemDtoResponses(items);
     }
 
     public ItemDtoResponse getById(Long userId, Long itemId) {
@@ -98,24 +87,13 @@ public class ItemService {
         return ItemMapper.mapToItemDto(item);
     }
 
-    public List<ItemDto> search(Long userId, String text, Optional<Integer> from, Optional<Integer> size) {
+    public List<ItemDto> search(Long userId, String text, Integer from, Integer size) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         Boolean available = true;
-        if (from.isEmpty() && size.isEmpty()) {
-            return ItemMapper.mapToItemDto(itemRepository
-                    .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text, available));
-        } else {
-            if (from.isEmpty() || from.get() < 0) {
-                throw new ValidationException("Неверный индекс элемента.");
-            }
-            if (size.isEmpty() || size.get() <= 0) {
-                throw new ValidationException("Неверное количество элементов.");
-            }
-            Pageable pageable = PageRequest.of(from.get() / size.get(), size.get(), Sort.by(ASC, "id"));
-            return ItemMapper.mapToItemDto(itemRepository
-                    .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text,
-                            available, pageable));
-        }
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(ASC, "id"));
+        return ItemMapper.mapToItemDto(itemRepository
+                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text,
+                        available, pageable));
     }
 
     @Transactional

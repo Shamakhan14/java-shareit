@@ -128,45 +128,6 @@ public class ItemServiceUnitTest {
     }
 
     @Test
-    void getAllTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository.findByOwnerOrderById(Mockito.anyLong()))
-                .thenReturn(List.of(item));
-        Mockito
-                .when(mockBookingRepository.findByItemInAndStatus(Mockito.anyList(), Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(nextBooking, lastBooking));
-        Mockito
-                .when(mockCommentRepository.findByItemIn(Mockito.anyList(), Mockito.any()))
-                .thenReturn(List.of(comment));
-
-        List<ItemDtoResponse> responses = service.getAll(user.getId(), Optional.empty(), Optional.empty());
-
-        assertThat(responses, hasSize(1));
-        assertThat(responses.get(0).getId(), equalTo(item.getId()));
-        assertThat(responses.get(0).getName(), equalTo(item.getName()));
-        assertThat(responses.get(0).getDescription(), equalTo(item.getDescription()));
-        assertThat(responses.get(0).getAvailable(), equalTo(item.getAvailable()));
-        assertThat(responses.get(0).getLastBooking().getId(), equalTo(lastBooking.getId()));
-        assertThat(responses.get(0).getLastBooking().getStart(), equalTo(lastBooking.getStart()));
-        assertThat(responses.get(0).getLastBooking().getEnd(), equalTo(lastBooking.getEnd()));
-        assertThat(responses.get(0).getLastBooking().getStatus(), equalTo(lastBooking.getStatus()));
-        assertThat(responses.get(0).getLastBooking().getBookerId(), equalTo(lastBooking.getBooker().getId()));
-        assertThat(responses.get(0).getNextBooking().getId(), equalTo(nextBooking.getId()));
-        assertThat(responses.get(0).getNextBooking().getStart(), equalTo(nextBooking.getStart()));
-        assertThat(responses.get(0).getNextBooking().getEnd(), equalTo(nextBooking.getEnd()));
-        assertThat(responses.get(0).getNextBooking().getStatus(), equalTo(nextBooking.getStatus()));
-        assertThat(responses.get(0).getNextBooking().getBookerId(), equalTo(nextBooking.getBooker().getId()));
-        assertThat(responses.get(0).getComments(), hasSize(1));
-        assertThat(responses.get(0).getComments().get(0).getId(), equalTo(comment.getId()));
-        assertThat(responses.get(0).getComments().get(0).getText(), equalTo(comment.getText()));
-        assertThat(responses.get(0).getComments().get(0).getAuthorName(), equalTo(comment.getAuthor().getName()));
-        assertThat(responses.get(0).getComments().get(0).getCreated(), equalTo(comment.getCreated()));
-    }
-
-    @Test
     void getAllPageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
@@ -181,7 +142,7 @@ public class ItemServiceUnitTest {
                 .when(mockCommentRepository.findByItemIn(Mockito.anyList(), Mockito.any()))
                 .thenReturn(List.of(comment));
 
-        List<ItemDtoResponse> responses = service.getAll(user.getId(), Optional.of(5), Optional.of(5));
+        List<ItemDtoResponse> responses = service.getAll(user.getId(), 0, 10);
 
         assertThat(responses, hasSize(1));
         assertThat(responses.get(0).getId(), equalTo(item.getId()));
@@ -213,33 +174,8 @@ public class ItemServiceUnitTest {
 
         assertThatExceptionOfType(UserNotFoundException.class)
                 .isThrownBy(() -> {
-                    List<ItemDtoResponse> responses = service.getAll(user.getId(),
-                            Optional.empty(), Optional.empty());
+                    List<ItemDtoResponse> responses = service.getAll(user.getId(), 0, 10);
                 }).withMessage("Неверный ID пользователя.");
-    }
-
-    @Test
-    void getAllWrongIndexTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<ItemDtoResponse> responses = service.getAll(user.getId(),
-                            Optional.of(-5), Optional.empty());
-                }).withMessage("Неверный индекс элемента.");
-    }
-
-    @Test
-    void getAllWrongSizeTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<ItemDtoResponse> responses = service.getAll(user.getId(),
-                            Optional.of(5), Optional.of(-5));
-                }).withMessage("Неверное количество элементов.");
     }
 
     @Test
@@ -398,28 +334,6 @@ public class ItemServiceUnitTest {
     }
 
     @Test
-    void searchTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository
-                        .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(
-                                Mockito.anyString(),
-                                Mockito.anyString(),
-                                Mockito.any()))
-                .thenReturn(List.of(item));
-
-        List<ItemDto> result = service.search(user.getId(), "text", Optional.empty(), Optional.empty());
-
-        assertThat(result, hasSize(1));
-        assertThat(result.get(0).getId(), equalTo(item.getId()));
-        assertThat(result.get(0).getDescription(), equalTo(item.getDescription()));
-        assertThat(result.get(0).getAvailable(), equalTo(item.getAvailable()));
-        assertThat(result.get(0).getRequestId(), equalTo(item.getRequest()));
-    }
-
-    @Test
     void searchPageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
@@ -433,7 +347,7 @@ public class ItemServiceUnitTest {
                                 Mockito.any()))
                 .thenReturn(List.of(item));
 
-        List<ItemDto> result = service.search(user.getId(), "text", Optional.of(5), Optional.of(5));
+        List<ItemDto> result = service.search(user.getId(), "text", 0, 10);
 
         assertThat(result, hasSize(1));
         assertThat(result.get(0).getId(), equalTo(item.getId()));
@@ -450,35 +364,8 @@ public class ItemServiceUnitTest {
 
         assertThatExceptionOfType(UserNotFoundException.class)
                 .isThrownBy(() -> {
-                    List<ItemDto> response = service.search(user.getId(),
-                            "text", Optional.empty(), Optional.empty());
+                    List<ItemDto> response = service.search(user.getId(), "text", 0, 10);
                 }).withMessage("Неверный ID пользователя.");
-    }
-
-    @Test
-    void searchFromNegativeTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<ItemDto> response = service.search(user.getId(),
-                            "text", Optional.of(-5), Optional.of(5));
-                }).withMessage("Неверный индекс элемента.");
-    }
-
-    @Test
-    void searchSizeNegativeTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<ItemDto> response = service.search(user.getId(),
-                            "text", Optional.of(5), Optional.of(-5));
-                }).withMessage("Неверное количество элементов.");
     }
 
     @Test

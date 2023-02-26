@@ -15,7 +15,6 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
-import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -134,33 +133,6 @@ public class ItemRequestServiceUnitTest {
     }
 
     @Test
-    void getAllTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockRequestRepository.findAllWithoutUser(Mockito.anyLong(), Mockito.any()))
-                .thenReturn(List.of(itemRequest));
-        Mockito
-                .when(mockItemRepository.findByRequestInOrderByIdDesc(Mockito.anyList()))
-                .thenReturn(List.of(item));
-
-        List<ItemRequestDtoOut> result = service.getAll(user.getId(), Optional.empty(), Optional.empty());
-
-        assertThat(result, hasSize(1));
-        assertThat(result.get(0).getId(), equalTo(itemRequest.getId()));
-        assertThat(result.get(0).getDescription(), equalTo(itemRequestDtoInc.getDescription()));
-        assertThat(result.get(0).getRequestor(), equalTo(user));
-        assertThat(result.get(0).getCreated(), notNullValue());
-        assertThat(result.get(0).getItems(), hasSize(1));
-        assertThat(result.get(0).getItems().get(0).getId(), equalTo(item.getId()));
-        assertThat(result.get(0).getItems().get(0).getName(), equalTo(item.getName()));
-        assertThat(result.get(0).getItems().get(0).getDescription(), equalTo(item.getDescription()));
-        assertThat(result.get(0).getItems().get(0).getAvailable(), equalTo(item.getAvailable()));
-        assertThat(result.get(0).getItems().get(0).getRequestId(), equalTo(item.getRequest()));
-    }
-
-    @Test
     void getAllPageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
@@ -172,7 +144,7 @@ public class ItemRequestServiceUnitTest {
                 .when(mockItemRepository.findByRequestInOrderByIdDesc(Mockito.anyList()))
                 .thenReturn(List.of(item));
 
-        List<ItemRequestDtoOut> result = service.getAll(user.getId(), Optional.of(5), Optional.of(5));
+        List<ItemRequestDtoOut> result = service.getAll(user.getId(), 0, 10);
 
         assertThat(result, hasSize(1));
         assertThat(result.get(0).getId(), equalTo(itemRequest.getId()));
@@ -195,61 +167,8 @@ public class ItemRequestServiceUnitTest {
 
         assertThatExceptionOfType(UserNotFoundException.class)
                 .isThrownBy(() -> {
-                    List<ItemRequestDtoOut> result = service.getAll(user.getId(),
-                            Optional.empty(), Optional.empty());
+                    List<ItemRequestDtoOut> result = service.getAll(user.getId(), 0, 10);
                 }).withMessage("Неверный ID пользователя.");
-    }
-
-    @Test
-    void getAllFromEmptySizePresentTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<ItemRequestDtoOut> result = service.getAll(user.getId(),
-                            Optional.empty(), Optional.of(5));
-                }).withMessage("Должны присутствовать оба параметра.");
-    }
-
-    @Test
-    void getAllFromPresentSizeEmptyTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<ItemRequestDtoOut> result = service.getAll(user.getId(),
-                            Optional.of(5), Optional.empty());
-                }).withMessage("Должны присутствовать оба параметра.");
-    }
-
-    @Test
-    void getAllFromNegativeTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<ItemRequestDtoOut> result = service.getAll(user.getId(),
-                            Optional.of(-5), Optional.of(5));
-                }).withMessage("Индекс не может быть меньше 0.");
-    }
-
-    @Test
-    void getAllSizeNegative() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<ItemRequestDtoOut> result = service.getAll(user.getId(),
-                            Optional.of(5), Optional.of(-5));
-                }).withMessage("Количество элементов не может быть меньше или равно 0.");
     }
 
     @Test

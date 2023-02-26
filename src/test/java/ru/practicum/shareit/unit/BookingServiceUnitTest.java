@@ -352,144 +352,6 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void getAllAllTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockBookingRepository.findByBookerOrderByStartDesc(Mockito.anyLong()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.ALL,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllCurrentTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockBookingRepository.findCurrent(Mockito.anyLong(), Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.CURRENT,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllPastTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockBookingRepository.findPast(Mockito.anyLong(), Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.PAST,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllFutureTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockBookingRepository.findFuture(Mockito.anyLong(), Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.FUTURE,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllWaitingTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockBookingRepository.findByBookerAndStatusOrderByStartDesc(Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.WAITING,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllRejectedTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockBookingRepository.findByBookerAndStatusOrderByStartDesc(Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.REJECTED,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
     void getAllAllPageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
@@ -498,8 +360,7 @@ public class BookingServiceUnitTest {
                 .when(mockBookingRepository.findByBookerOrderByStartDescPageable(Mockito.anyLong(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.ALL,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAll(user.getId(), State.ALL, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -521,8 +382,7 @@ public class BookingServiceUnitTest {
                 .when(mockBookingRepository.findCurrentPageable(Mockito.anyLong(), Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.CURRENT,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAll(user.getId(), State.CURRENT, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -544,8 +404,7 @@ public class BookingServiceUnitTest {
                 .when(mockBookingRepository.findPastPageable(Mockito.anyLong(), Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.PAST,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAll(user.getId(), State.PAST, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -567,8 +426,7 @@ public class BookingServiceUnitTest {
                 .when(mockBookingRepository.findFuturePageable(Mockito.anyLong(), Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.FUTURE,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAll(user.getId(), State.FUTURE, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -591,8 +449,7 @@ public class BookingServiceUnitTest {
                         Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.WAITING,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAll(user.getId(), State.WAITING, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -615,8 +472,7 @@ public class BookingServiceUnitTest {
                         Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAll(user.getId(), State.REJECTED,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAll(user.getId(), State.REJECTED, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -637,191 +493,8 @@ public class BookingServiceUnitTest {
 
         assertThatExceptionOfType(UserNotFoundException.class)
                 .isThrownBy(() -> {
-                    List<BookingDtoResponse> response = service.getAll(user.getId(), State.REJECTED,
-                            Optional.empty(), Optional.empty());
+                    List<BookingDtoResponse> response = service.getAll(user.getId(), State.REJECTED, 0, 10);
                 }).withMessage("Неверный ID пользователя.");
-    }
-
-    @Test
-    void getAllFromNegativeTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<BookingDtoResponse> response = service.getAll(user.getId(), State.ALL,
-                            Optional.of(-5), Optional.of(5));
-                }).withMessage("Неверный индекс элемента.");
-    }
-
-    @Test
-    void getAllSizeNegativeTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<BookingDtoResponse> response = service.getAll(user.getId(), State.ALL,
-                            Optional.of(5), Optional.of(-5));
-                }).withMessage("Неверное количество элементов.");
-    }
-
-    @Test
-    void getAllForItemsAllTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository.findByOwnerOrderById(Mockito.anyLong()))
-                .thenReturn(List.of(item));
-        Mockito
-                .when(mockBookingRepository.findAllForItems(Mockito.anyLong(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.ALL,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllForItemsCurrentTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository.findByOwnerOrderById(Mockito.anyLong()))
-                .thenReturn(List.of(item));
-        Mockito
-                .when(mockBookingRepository.findAllForItemsCurrent(Mockito.anyLong(), Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.CURRENT,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllForItemsPastTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository.findByOwnerOrderById(Mockito.anyLong()))
-                .thenReturn(List.of(item));
-        Mockito
-                .when(mockBookingRepository.findAllForItemsPast(Mockito.anyLong(), Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.PAST,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllForItemsFutureTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository.findByOwnerOrderById(Mockito.anyLong()))
-                .thenReturn(List.of(item));
-        Mockito
-                .when(mockBookingRepository.findAllForItemsFuture(Mockito.anyLong(), Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.FUTURE,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllForItemsWaitingTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository.findByOwnerOrderById(Mockito.anyLong()))
-                .thenReturn(List.of(item));
-        Mockito
-                .when(mockBookingRepository.findAllForItemsStatus(Mockito.anyLong(), Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.WAITING,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
-    }
-
-    @Test
-    void getAllForItemsRejectedTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository.findByOwnerOrderById(Mockito.anyLong()))
-                .thenReturn(List.of(item));
-        Mockito
-                .when(mockBookingRepository.findAllForItemsStatus(Mockito.anyLong(), Mockito.any(), Mockito.any()))
-                .thenReturn(List.of(booking));
-
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.REJECTED,
-                Optional.empty(), Optional.empty());
-
-        assertThat(response, hasSize(1));
-        assertThat(response.get(0).getId(), equalTo(booking.getId()));
-        assertThat(response.get(0).getStart(), equalTo(bookingDtoCreate.getStart()));
-        assertThat(response.get(0).getEnd(), equalTo(bookingDtoCreate.getEnd()));
-        assertThat(response.get(0).getStatus(), equalTo(booking.getStatus()));
-        assertThat(response.get(0).getBooker().getId(), equalTo(user.getId()));
-        assertThat(response.get(0).getBooker().getName(), equalTo(user.getName()));
-        assertThat(response.get(0).getItem().getId(), equalTo(item.getId()));
-        assertThat(response.get(0).getItem().getName(), equalTo(item.getName()));
     }
 
     @Test
@@ -836,8 +509,7 @@ public class BookingServiceUnitTest {
                 .when(mockBookingRepository.findAllForItemsPageable(Mockito.anyLong(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.ALL,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.ALL, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -863,8 +535,7 @@ public class BookingServiceUnitTest {
                         Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.CURRENT,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.CURRENT, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -890,8 +561,7 @@ public class BookingServiceUnitTest {
                         Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.PAST,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.PAST, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -917,8 +587,7 @@ public class BookingServiceUnitTest {
                         Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.FUTURE,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.FUTURE, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -944,8 +613,7 @@ public class BookingServiceUnitTest {
                         Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.WAITING,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.WAITING, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -971,8 +639,7 @@ public class BookingServiceUnitTest {
                         Mockito.any(), Mockito.any()))
                 .thenReturn(List.of(booking));
 
-        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.REJECTED,
-                Optional.of(5), Optional.of(5));
+        List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.REJECTED, 0, 10);
 
         assertThat(response, hasSize(1));
         assertThat(response.get(0).getId(), equalTo(booking.getId()));
@@ -993,8 +660,7 @@ public class BookingServiceUnitTest {
 
         assertThatExceptionOfType(UserNotFoundException.class)
                 .isThrownBy(() -> {
-                    List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.REJECTED,
-                            Optional.of(5), Optional.of(5));
+                    List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.REJECTED, 0, 10);
                 }).withMessage("Неверный ID пользователя.");
     }
 
@@ -1009,40 +675,7 @@ public class BookingServiceUnitTest {
 
         assertThatExceptionOfType(EntityNotFoundException.class)
                 .isThrownBy(() -> {
-                    List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.REJECTED,
-                            Optional.of(5), Optional.of(5));
+                    List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.REJECTED, 0, 10);
                 }).withMessage("У данного пользователя нет вещей.");
-    }
-
-    @Test
-    void getAllForItemsFromNegativeTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository.findByOwnerOrderById(Mockito.anyLong()))
-                .thenReturn(List.of(item));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.REJECTED,
-                            Optional.of(-5), Optional.of(5));
-                }).withMessage("Неверный индекс элемента.");
-    }
-
-    @Test
-    void getAllForItemsSizeNegativeTest() {
-        Mockito
-                .when(mockUserRepository.findById(Mockito.anyLong()))
-                .thenReturn(Optional.of(user));
-        Mockito
-                .when(mockItemRepository.findByOwnerOrderById(Mockito.anyLong()))
-                .thenReturn(List.of(item));
-
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> {
-                    List<BookingDtoResponse> response = service.getAllForItems(user.getId(), State.REJECTED,
-                            Optional.of(5), Optional.of(-5));
-                }).withMessage("Неверное количество элементов.");
     }
 }

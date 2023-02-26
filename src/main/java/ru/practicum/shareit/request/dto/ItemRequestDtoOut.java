@@ -3,7 +3,7 @@ package ru.practicum.shareit.request.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.request.Response;
+import ru.practicum.shareit.request.RequestResponse;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
@@ -18,5 +18,5 @@ public class ItemRequestDtoOut {
     private String description;
     private User requestor;
     private LocalDateTime created;
-    private List<Response> items;
+    private List<RequestResponse> items;
 }

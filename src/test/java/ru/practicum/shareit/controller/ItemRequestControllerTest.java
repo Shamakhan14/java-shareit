@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.practicum.shareit.request.ItemRequestController;
 import ru.practicum.shareit.request.ItemRequestService;
-import ru.practicum.shareit.request.Response;
+import ru.practicum.shareit.request.RequestResponse;
 import ru.practicum.shareit.request.dto.ItemRequestDtoInc;
 import ru.practicum.shareit.request.dto.ItemRequestDtoOut;
 import ru.practicum.shareit.user.User;
@@ -50,19 +50,19 @@ public class ItemRequestControllerTest {
         user.setId(1L);
         user.setName("name");
         user.setEmail("email@email.com");
-        Response response = new Response();
-        response.setId(1L);
-        response.setName("name");
-        response.setUserId(1L);
-        response.setDescription("description");
-        response.setAvailable(true);
-        response.setRequestId(1L);
+        RequestResponse requestResponse = new RequestResponse();
+        requestResponse.setId(1L);
+        requestResponse.setName("name");
+        requestResponse.setUserId(1L);
+        requestResponse.setDescription("description");
+        requestResponse.setAvailable(true);
+        requestResponse.setRequestId(1L);
         itemRequestDtoOut = new ItemRequestDtoOut(
                 1L,
                 "description",
                 user,
                 null,
-                List.of(response)
+                List.of(requestResponse)
         );
     }
 
@@ -165,5 +165,18 @@ public class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.items[0].description", is(itemRequestDtoOut.getItems().get(0).getDescription())))
                 .andExpect(jsonPath("$.items[0].available", is(itemRequestDtoOut.getItems().get(0).getAvailable())))
                 .andExpect(jsonPath("$.items[0].requestId", is(itemRequestDtoOut.getItems().get(0).getRequestId()), Long.class));
+    }
+
+    @Test
+    void createDescriptionNullTest() throws Exception {
+        itemRequestDtoInc.setDescription(null);
+
+        mvc.perform(post("/requests")
+                        .header("X-Sharer-User-Id", 1)
+                        .content(mapper.writeValueAsString(itemRequestDtoInc))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
     }
 }

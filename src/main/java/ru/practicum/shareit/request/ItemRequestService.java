@@ -52,26 +52,12 @@ public class ItemRequestService {
         return ItemRequestMapper.mapRequestsToOutcomingRequests(requests, responses);
     }
 
-    public List<ItemRequestDtoOut> getAll(Long userId, Optional<Integer> from, Optional<Integer> size) {
+    public List<ItemRequestDtoOut> getAll(Long userId, Integer from, Integer size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Неверный ID пользователя."));
-        if ((from.isEmpty() && size.isPresent()) || (from.isPresent() && size.isEmpty())) {
-            throw new ValidationException("Должны присутствовать оба параметра.");
-        }
         List<ItemRequest> requests;
-        if (from.isEmpty() && size.isEmpty()) {
-            requests = itemRequestRepository.findAllWithoutUser(userId, Sort.by(DESC, "created"));
-
-        } else {
-            if (from.get() < 0) {
-                throw new ValidationException("Индекс не может быть меньше 0.");
-            }
-            if (size.get() <= 0) {
-                throw new ValidationException("Количество элементов не может быть меньше или равно 0.");
-            }
-            Pageable pageable = PageRequest.of(from.get() / size.get(), size.get(), Sort.by(DESC, "created"));
-            requests = itemRequestRepository.findAllPageable(userId, pageable);
-        }
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(DESC, "created"));
+        requests = itemRequestRepository.findAllPageable(userId, pageable);
         List<Long> requestIds = requests.stream()
                 .map(ItemRequest::getId)
                 .collect(toList());

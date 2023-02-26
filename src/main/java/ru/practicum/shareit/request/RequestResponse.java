@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor
-public class Response {
+public class RequestResponse {
     private Long id;
     private String name;
     private Long userId;
