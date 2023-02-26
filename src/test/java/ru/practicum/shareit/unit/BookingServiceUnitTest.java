@@ -6,7 +6,6 @@ import org.mockito.Mockito;
 import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingDtoCreate;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
-import ru.practicum.shareit.exceptions.UnknownStatusException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
@@ -353,7 +352,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllAllTest() {
+    void getAllAllTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -376,7 +375,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllCurrentTest() {
+    void getAllCurrentTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -399,7 +398,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllPastTest() {
+    void getAllPastTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -422,7 +421,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllFutureTest() {
+    void getAllFutureTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -445,7 +444,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllWaitingTest() {
+    void getAllWaitingTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -468,7 +467,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllRejectedTest() {
+    void getAllRejectedTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -491,7 +490,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllAllPageableTest() {
+    void getAllAllPageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -514,7 +513,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllCurrentPageableTest() {
+    void getAllCurrentPageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -537,7 +536,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllPastPageableTest() {
+    void getAllPastPageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -560,7 +559,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllFuturePageableTest() {
+    void getAllFuturePageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -583,7 +582,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllWaitingPageableTest() {
+    void getAllWaitingPageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
@@ -607,7 +606,7 @@ public class BookingServiceUnitTest {
     }
 
     @Test
-    void GetAllRejectedPageableTest() {
+    void getAllRejectedPageableTest() {
         Mockito
                 .when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.of(user));
