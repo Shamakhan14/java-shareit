@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.dto.BookingDtoCreate;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/bookings")
@@ -42,16 +43,20 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDtoResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                           @RequestParam(defaultValue = "ALL") State state) {
-        List<BookingDtoResponse> response = bookingService.getAll(userId, state);
+                                           @RequestParam(defaultValue = "ALL") State state,
+                                           @RequestParam(required = false) Optional<Integer> from,
+                                           @RequestParam(required = false) Optional<Integer> size) {
+        List<BookingDtoResponse> response = bookingService.getAll(userId, state, from, size);
         log.info("Выведен список бронирований пользователя.");
         return response;
     }
 
     @GetMapping("/owner")
     public List<BookingDtoResponse> getAllForItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                               @RequestParam(defaultValue = "ALL") State state) {
-        List<BookingDtoResponse> response = bookingService.getAllForItems(userId, state);
+                                                   @RequestParam(defaultValue = "ALL") State state,
+                                                   @RequestParam(required = false) Optional<Integer> from,
+                                                   @RequestParam(required = false) Optional<Integer> size) {
+        List<BookingDtoResponse> response = bookingService.getAllForItems(userId, state, from, size);
         log.info("Выведен список бронирований пользователя.");
         return response;
     }

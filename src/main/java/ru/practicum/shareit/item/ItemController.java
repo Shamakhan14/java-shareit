@@ -12,6 +12,7 @@ import ru.practicum.shareit.user.Create;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/items")
@@ -30,8 +31,10 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDtoResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        List<ItemDtoResponse> response = itemService.getAll(userId);
+    public List<ItemDtoResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                        @RequestParam(required = false) Optional<Integer> from,
+                                        @RequestParam(required = false) Optional<Integer> size) {
+        List<ItemDtoResponse> response = itemService.getAll(userId, from, size);
         log.info("Запрошен список вещей.");
         return response;
     }
@@ -52,9 +55,12 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam String text) {
+    public List<ItemDto> search(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                @RequestParam String text,
+                                @RequestParam(required = false) Optional<Integer> from,
+                                @RequestParam(required = false) Optional<Integer> size) {
         if (text.isBlank()) return List.of();
-        List<ItemDto> items = itemService.search(userId, text);
+        List<ItemDto> items = itemService.search(userId, text, from, size);
         log.info("Выполнен поиск по описанию: {}", text);
         return items;
     }

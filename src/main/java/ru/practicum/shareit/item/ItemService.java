@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
@@ -43,10 +46,22 @@ public class ItemService {
         return ItemMapper.mapToItemDto(itemRepository.save(item));
     }
 
-    public List<ItemDtoResponse> getAll(Long userId) {
+    public List<ItemDtoResponse> getAll(Long userId, Optional<Integer> from, Optional<Integer> size) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        List<Item> items = itemRepository.findByOwnerOrderById(userId);
-        return mapItemsToItemDtoResponses(items);
+        if (from.isEmpty() && size.isEmpty()) {
+            List<Item> items = itemRepository.findByOwnerOrderById(userId);
+            return mapItemsToItemDtoResponses(items);
+        } else {
+            if (from.isEmpty() || from.get() < 0) {
+                throw new ValidationException("Неверный индекс элемента.");
+            }
+            if (size.isEmpty() || size.get() <= 0) {
+                throw new ValidationException("Неверное количество элементов.");
+            }
+            Pageable pageable = PageRequest.of(from.get() / size.get(), size.get(), Sort.by(ASC, "id"));
+            List<Item> items = itemRepository.findByOwnerOrderByIdPageable(userId, pageable);
+            return mapItemsToItemDtoResponses(items);
+        }
     }
 
     public ItemDtoResponse getById(Long userId, Long itemId) {
@@ -83,11 +98,24 @@ public class ItemService {
         return ItemMapper.mapToItemDto(item);
     }
 
-    public List<ItemDto> search(Long userId, String text) {
+    public List<ItemDto> search(Long userId, String text, Optional<Integer> from, Optional<Integer> size) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         Boolean available = true;
-        return ItemMapper.mapToItemDto(itemRepository
-                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailable(text, text, available));
+        if (from.isEmpty() && size.isEmpty()) {
+            return ItemMapper.mapToItemDto(itemRepository
+                    .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text, available));
+        } else {
+            if (from.isEmpty() || from.get() < 0) {
+                throw new ValidationException("Неверный индекс элемента.");
+            }
+            if (size.isEmpty() || size.get() <= 0) {
+                throw new ValidationException("Неверное количество элементов.");
+            }
+            Pageable pageable = PageRequest.of(from.get() / size.get(), size.get(), Sort.by(ASC, "id"));
+            return ItemMapper.mapToItemDto(itemRepository
+                    .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text,
+                            available, pageable));
+        }
     }
 
     @Transactional
