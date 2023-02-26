@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import ru.practicum.shareit.exceptions.DuplicateEmailException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 
 import javax.persistence.EntityNotFoundException;
@@ -56,14 +55,6 @@ public class ErrorHandler {
     public Map<String, String> handle404(final UserNotFoundException exception) {
         log.info("{}:{}", exception.getClass().toString(), exception.getMessage());
         return Map.of("error", "Искомый объект не найден.",
-                "error message", exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleDuplicateEmailError(final DuplicateEmailException exception) {
-        log.info("{}:{}", exception.getClass().toString(), exception.getMessage());
-        return Map.of("error", exception.getClass().toString(),
                 "error message", exception.getMessage());
     }
 
