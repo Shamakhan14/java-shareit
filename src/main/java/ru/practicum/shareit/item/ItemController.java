@@ -11,12 +11,15 @@ import ru.practicum.shareit.item.dto.ItemDtoResponse;
 import ru.practicum.shareit.user.Create;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ItemController {
 
     private final ItemService itemService;
@@ -30,8 +33,10 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDtoResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        List<ItemDtoResponse> response = itemService.getAll(userId);
+    public List<ItemDtoResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                        @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                        @RequestParam(defaultValue = "10") @Positive Integer size) {
+        List<ItemDtoResponse> response = itemService.getAll(userId, from, size);
         log.info("Запрошен список вещей.");
         return response;
     }
@@ -52,9 +57,12 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestParam String text) {
+    public List<ItemDto> search(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                @RequestParam String text,
+                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                @RequestParam(defaultValue = "10") @Positive Integer size) {
         if (text.isBlank()) return List.of();
-        List<ItemDto> items = itemService.search(userId, text);
+        List<ItemDto> items = itemService.search(userId, text, from, size);
         log.info("Выполнен поиск по описанию: {}", text);
         return items;
     }

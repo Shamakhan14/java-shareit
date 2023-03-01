@@ -7,12 +7,15 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDtoCreate;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class BookingController {
 
     private final BookingService bookingService;
@@ -42,16 +45,20 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDtoResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                           @RequestParam(defaultValue = "ALL") State state) {
-        List<BookingDtoResponse> response = bookingService.getAll(userId, state);
+                                           @RequestParam(defaultValue = "ALL") State state,
+                                           @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                           @RequestParam(defaultValue = "10") @Positive Integer size) {
+        List<BookingDtoResponse> response = bookingService.getAll(userId, state, from, size);
         log.info("Выведен список бронирований пользователя.");
         return response;
     }
 
     @GetMapping("/owner")
     public List<BookingDtoResponse> getAllForItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                               @RequestParam(defaultValue = "ALL") State state) {
-        List<BookingDtoResponse> response = bookingService.getAllForItems(userId, state);
+                                                   @RequestParam(defaultValue = "ALL") State state,
+                                                   @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                                   @RequestParam(defaultValue = "10") @Positive Integer size) {
+        List<BookingDtoResponse> response = bookingService.getAllForItems(userId, state, from, size);
         log.info("Выведен список бронирований пользователя.");
         return response;
     }

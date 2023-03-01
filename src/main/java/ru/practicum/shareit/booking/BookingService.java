@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,30 +82,39 @@ public class BookingService {
         return BookingMapper.mapBookingToBookingDtoResponse(booking);
     }
 
-    public List<BookingDtoResponse> getAll(Long userId, State state) {
+    public List<BookingDtoResponse> getAll(Long userId, State state, Integer from,
+                                           Integer size) {
         if (!isValidRequester(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         List<Booking> bookings;
+        Pageable pageable;
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findByBookerOrderByStartDesc(userId);
+                pageable = PageRequest.of(from / size, size);
+                bookings = bookingRepository.findByBookerOrderByStartDescPageable(userId, pageable);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findCurrent(userId, LocalDateTime.now(),
+                pageable = PageRequest.of(from / size, size,
                         Sort.by(Sort.Direction.DESC, "start"));
+                bookings = bookingRepository.findCurrentPageable(userId, LocalDateTime.now(), pageable);
                 break;
             case PAST:
-                bookings = bookingRepository.findPast(userId, LocalDateTime.now(),
+                pageable = PageRequest.of(from / size, size,
                         Sort.by(Sort.Direction.DESC, "start"));
+                bookings = bookingRepository.findPastPageable(userId, LocalDateTime.now(), pageable);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findFuture(userId, LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "start"));
+                pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start"));
+                bookings = bookingRepository.findFuturePageable(userId, LocalDateTime.now(), pageable);
                 break;
             case WAITING:
-                bookings = bookingRepository.findByBookerAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+                pageable = PageRequest.of(from / size, size);
+                bookings = bookingRepository.findByBookerAndStatusOrderByStartDescPageable(userId,
+                        BookingStatus.WAITING, pageable);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findByBookerAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
+                pageable = PageRequest.of(from / size, size);
+                bookings = bookingRepository.findByBookerAndStatusOrderByStartDescPageable(userId,
+                        BookingStatus.REJECTED, pageable);
                 break;
             default:
                 throw new UnknownStatusException("Unknown state: UNSUPPORTED_STATUS");
@@ -111,7 +122,7 @@ public class BookingService {
         return BookingMapper.mapBookingsIntoResponse(bookings);
     }
 
-    public List<BookingDtoResponse> getAllForItems(Long userId, State state) {
+    public List<BookingDtoResponse> getAllForItems(Long userId, State state, Integer from, Integer size) {
         if (!isValidRequester(userId)) {
             throw new UserNotFoundException("Неверный ID пользователя.");
         }
@@ -119,30 +130,25 @@ public class BookingService {
             throw new EntityNotFoundException("У данного пользователя нет вещей.");
         }
         List<Booking> bookings;
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start"));
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findAllForItems(userId,
-                        Sort.by(Sort.Direction.DESC, "start"));
+                bookings = bookingRepository.findAllForItemsPageable(userId, pageable);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllForItemsCurrent(userId, LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "start"));
+                bookings = bookingRepository.findAllForItemsCurrentPageable(userId, LocalDateTime.now(), pageable);
                 break;
             case PAST:
-                bookings = bookingRepository.findAllForItemsPast(userId, LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "start"));
+                bookings = bookingRepository.findAllForItemsPastPageable(userId, LocalDateTime.now(),pageable);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllForItemsFuture(userId, LocalDateTime.now(),
-                        Sort.by(Sort.Direction.DESC, "start"));
+                bookings = bookingRepository.findAllForItemsFuturePageable(userId, LocalDateTime.now(), pageable);
                 break;
             case WAITING:
-                bookings = bookingRepository.findAllForItemsStatus(userId, BookingStatus.WAITING,
-                        Sort.by(Sort.Direction.DESC, "start"));
+                bookings = bookingRepository.findAllForItemsStatusPageable(userId, BookingStatus.WAITING, pageable);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findAllForItemsStatus(userId, BookingStatus.REJECTED,
-                        Sort.by(Sort.Direction.DESC, "start"));
+                bookings = bookingRepository.findAllForItemsStatusPageable(userId, BookingStatus.REJECTED, pageable);
                 break;
             default:
                 throw new UnknownStatusException("Unknown state: UNSUPPORTED_STATUS");

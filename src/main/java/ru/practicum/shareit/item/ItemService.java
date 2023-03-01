@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
@@ -43,9 +46,10 @@ public class ItemService {
         return ItemMapper.mapToItemDto(itemRepository.save(item));
     }
 
-    public List<ItemDtoResponse> getAll(Long userId) {
+    public List<ItemDtoResponse> getAll(Long userId, Integer from, Integer size) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
-        List<Item> items = itemRepository.findByOwnerOrderById(userId);
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(ASC, "id"));
+        List<Item> items = itemRepository.findByOwnerOrderByIdPageable(userId, pageable);
         return mapItemsToItemDtoResponses(items);
     }
 
@@ -83,11 +87,13 @@ public class ItemService {
         return ItemMapper.mapToItemDto(item);
     }
 
-    public List<ItemDto> search(Long userId, String text) {
+    public List<ItemDto> search(Long userId, String text, Integer from, Integer size) {
         if (!isValidOwner(userId)) throw new UserNotFoundException("Неверный ID пользователя.");
         Boolean available = true;
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by(ASC, "id"));
         return ItemMapper.mapToItemDto(itemRepository
-                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAndAvailable(text, text, available));
+                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text,
+                        available, pageable));
     }
 
     @Transactional

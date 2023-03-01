@@ -13,7 +13,7 @@ import java.util.List;
 public class ItemMapper {
 
     public static ItemDto mapToItemDto(Item item) {
-        return new ItemDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable());
+        return new ItemDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable(), item.getRequest());
     }
 
     public static List<ItemDto> mapToItemDto(Iterable<Item> items) {
@@ -30,6 +30,7 @@ public class ItemMapper {
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
+        item.setRequest(itemDto.getRequestId());
         return item;
     }
 
