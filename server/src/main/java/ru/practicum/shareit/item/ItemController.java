@@ -2,31 +2,25 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.user.Create;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentDtoInc;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoResponse;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
-@Validated
 public class ItemController {
 
     private final ItemService itemService;
 
     @PostMapping
     public ItemDto create(@RequestHeader("X-Sharer-User-Id") Long userId,
-                          @RequestBody @Validated(Create.class) ItemDto itemDto) {
+                          @RequestBody ItemDto itemDto) {
         ItemDto response = itemService.create(userId, itemDto);
         log.info("Вещь {} успешно добавлена.", itemDto.getName());
         return response;
@@ -34,8 +28,8 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDtoResponse> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                        @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                        @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                        @RequestParam(defaultValue = "0") Integer from,
+                                        @RequestParam(defaultValue = "10") Integer size) {
         List<ItemDtoResponse> response = itemService.getAll(userId, from, size);
         log.info("Запрошен список вещей.");
         return response;
@@ -59,8 +53,8 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> search(@RequestHeader("X-Sharer-User-Id") Long userId,
                                 @RequestParam String text,
-                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                @RequestParam(defaultValue = "0") Integer from,
+                                @RequestParam(defaultValue = "10") Integer size) {
         if (text.isBlank()) return List.of();
         List<ItemDto> items = itemService.search(userId, text, from, size);
         log.info("Выполнен поиск по описанию: {}", text);
@@ -69,7 +63,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentDto post(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId,
-                           @RequestBody @Valid CommentDtoInc commentDtoInc) {
+                           @RequestBody CommentDtoInc commentDtoInc) {
         CommentDto commentDto = itemService.post(userId, itemId, commentDtoInc);
         log.info("Комментарий успешно загружен.");
         return commentDto;

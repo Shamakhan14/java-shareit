@@ -1,27 +1,26 @@
 version: '3.8'
 services:
   gateway:
-    build: gateway
-    image: gateway
+    build: ./gateway
     container_name: gateway_container
     ports:
       - "8080:8080"
     depends_on:
       - server
-      - db
     environment:
       - SHAREIT_SERVER_URL=http://server:9090
 
   server:
-    build: server
-    image: server
+    build: ./server
     container_name: server_container
     ports:
       - "9090:9090"
     depends_on:
       - db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/shareit
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
+      - SPRING.DATASOURCE.USERNAME=root
+      - SPRING.DATASOURCE.PASSWORD=123
 
   db:
     image: postgres:14.6-alpine

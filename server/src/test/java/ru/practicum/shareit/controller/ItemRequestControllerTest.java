@@ -166,17 +166,4 @@ public class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.items[0].available", is(itemRequestDtoOut.getItems().get(0).getAvailable())))
                 .andExpect(jsonPath("$.items[0].requestId", is(itemRequestDtoOut.getItems().get(0).getRequestId()), Long.class));
     }
-
-    @Test
-    void createDescriptionNullTest() throws Exception {
-        itemRequestDtoInc.setDescription(null);
-
-        mvc.perform(post("/requests")
-                        .header("X-Sharer-User-Id", 1)
-                        .content(mapper.writeValueAsString(itemRequestDtoInc))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
 }
