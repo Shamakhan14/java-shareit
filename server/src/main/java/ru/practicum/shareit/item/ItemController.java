@@ -55,7 +55,6 @@ public class ItemController {
                                 @RequestParam String text,
                                 @RequestParam(defaultValue = "0") Integer from,
                                 @RequestParam(defaultValue = "10") Integer size) {
-        if (text.isBlank()) return List.of();
         List<ItemDto> items = itemService.search(userId, text, from, size);
         log.info("Выполнен поиск по описанию: {}", text);
         return items;

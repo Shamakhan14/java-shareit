@@ -13,6 +13,7 @@ import ru.practicum.shareit.user.Create;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.util.List;
 
 @Controller
 @RequestMapping(path = "/items")
@@ -51,6 +52,7 @@ public class ItemController {
                                          @RequestParam String text,
                                          @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                          @RequestParam(defaultValue = "10") @Positive Integer size) {
+        if (text.isBlank()) return ResponseEntity.ok(List.of());
         return itemClient.search(userId, text, from, size);
     }
 
