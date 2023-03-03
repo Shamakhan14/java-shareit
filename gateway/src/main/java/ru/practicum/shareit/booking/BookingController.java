@@ -12,7 +12,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
 @Controller
-@RequestMapping(path = "/users")
+@RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 @Slf4j
 @Validated
@@ -30,7 +30,7 @@ public class BookingController {
 
     @PatchMapping("/{bookingId}")
     public ResponseEntity<Object> updateStatus(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                           @PathVariable Long bookingId, @RequestParam Boolean approved) {
+                                               @PathVariable Long bookingId, @RequestParam Boolean approved) {
         return bookingClient.updateStatus(userId, bookingId, approved);
     }
 
@@ -41,17 +41,17 @@ public class BookingController {
 
     @GetMapping
     public ResponseEntity<Object> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                           @RequestParam(defaultValue = "ALL") State state,
-                                           @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                           @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                         @RequestParam(defaultValue = "ALL") State state,
+                                         @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                         @RequestParam(defaultValue = "10") @Positive Integer size) {
         return bookingClient.getAll(userId, state, from, size);
     }
 
     @GetMapping("/owner")
     public ResponseEntity<Object> getAllForItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                   @RequestParam(defaultValue = "ALL") State state,
-                                                   @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                                   @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                                 @RequestParam(defaultValue = "ALL") State state,
+                                                 @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                                 @RequestParam(defaultValue = "10") @Positive Integer size) {
         return bookingClient.getAllForItems(userId, state, from, size);
     }
 }

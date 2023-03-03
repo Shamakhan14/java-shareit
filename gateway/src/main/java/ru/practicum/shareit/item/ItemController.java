@@ -15,7 +15,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
 @Controller
-@RequestMapping(path = "/users")
+@RequestMapping(path = "/items")
 @RequiredArgsConstructor
 @Slf4j
 @Validated
@@ -30,8 +30,8 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<Object> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                        @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                        @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                         @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                         @RequestParam(defaultValue = "10") @Positive Integer size) {
         return itemClient.getAll(userId, from, size);
     }
 
@@ -42,21 +42,21 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<Object> update(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId,
-                          @RequestBody ItemDto itemDto) {
+                                         @RequestBody ItemDto itemDto) {
         return itemClient.update(userId, itemId, itemDto);
     }
 
     @GetMapping("/search")
     public ResponseEntity<Object> search(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                @RequestParam String text,
-                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                @RequestParam(defaultValue = "10") @Positive Integer size) {
+                                         @RequestParam String text,
+                                         @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                         @RequestParam(defaultValue = "10") @Positive Integer size) {
         return itemClient.search(userId, text, from, size);
     }
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> post(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId,
-                           @RequestBody @Valid CommentDtoInc commentDtoInc) {
+                                       @RequestBody @Valid CommentDtoInc commentDtoInc) {
         return itemClient.comment(userId, itemId, commentDtoInc);
     }
 }
